@@ -1,133 +1,37 @@
-/* public/css/style.css */
-:root {
-    --bg: #121212;
-    --card-bg: #1e1e1e;
-    --primary: #bb86fc;
-    --secondary: #03dac6;
-    --error: #cf6679;
-    --text: #e0e0e0;
-}
+/* Add these to your existing style.css */
 
-body { 
-    background: var(--bg); 
-    color: var(--text); 
-    font-family: 'Inter', -apple-system, sans-serif; 
-    padding: 15px; 
-    margin: 0;
-}
-
-nav { 
-    background: var(--card-bg); 
-    padding: 15px; 
-    border-radius: 12px; 
-    margin-bottom: 20px; 
+.card-actions {
+    position: absolute;
+    top: -10px;
+    right: -10px;
     display: flex;
-    flex-wrap: wrap; /* Allows menu to wrap on small screens */
-    gap: 10px;
-    align-items: center;
-    border: 1px solid #333;
+    gap: 5px;
 }
 
-nav a { 
-    color: var(--primary); 
-    text-decoration: none; 
-    font-size: 0.9rem;
-    padding: 5px 10px;
-    border-radius: 6px;
-}
-
-nav a.active { background: #333; color: #fff; }
-
-.card-editor { 
-    background: var(--card-bg); 
-    padding: 20px; 
-    border-radius: 12px; 
-    border: 1px solid #333; 
-    max-width: 500px;
-    margin: 0 auto 30px auto;
-}
-
-textarea, input { 
-    width: 100%; 
-    padding: 12px; 
-    margin: 8px 0; 
-    background: #2b2b2b; 
-    border: 1px solid #444; 
-    color: white; 
-    border-radius: 8px; 
-    box-sizing: border-box; 
-    font-size: 16px; /* Prevents iOS auto-zoom on focus */
-}
-
-button { 
-    background: var(--primary); 
-    color: #000; 
-    border: none; 
-    padding: 14px; 
-    border-radius: 8px; 
-    cursor: pointer; 
-    font-weight: bold;
-    width: 100%;
-    margin-top: 10px;
-}
-
-/* Responsive Grid */
-.item-list { 
-    display: grid; 
-    grid-template-columns: 1fr; /* Default to 1 column for mobile */
-    gap: 15px; 
-}
-
-/* Tablet and Desktop Grid */
-@media (min-width: 600px) {
-    .item-list { grid-template-columns: repeat(2, 1fr); }
-}
-
-@media (min-width: 1000px) {
-    .item-list { grid-template-columns: repeat(3, 1fr); }
-}
-
-.item-card { 
-    background: var(--card-bg); 
-    padding: 15px; 
-    border-radius: 12px; 
-    border-top: 3px solid var(--primary); 
-    position: relative; 
-    display: flex;
-    flex-direction: column;
-}
-
-.badge {
-    background: var(--secondary);
-    color: #000;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-size: 0.75rem;
-    font-weight: bold;
-    align-self: flex-start;
-    margin-bottom: 8px;
-}
-
-.item-card img { 
-    width: 100%; 
-    border-radius: 6px; 
-    margin-bottom: 10px; 
-    aspect-ratio: 1 / 1; 
-    object-fit: cover; 
-}
-
-.delete-btn { 
-    background: var(--error); 
-    color: white; 
-    text-decoration: none; 
+.edit-btn, .delete-link {
     width: 28px;
     height: 28px;
     display: flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    position: absolute; 
-    top: -10px; 
-    right: -10px; 
+    text-decoration: none;
+    font-size: 14px;
     border: 2px solid var(--bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.edit-btn {
+    background: var(--secondary);
+    color: #000;
+}
+
+.delete-link {
+    background: var(--error);
+    color: white;
+}
+
+/* Ensure images don't cover buttons */
+.item-card {
+    padding-top: 25px; 
 }
