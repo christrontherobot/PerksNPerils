@@ -1,18 +1,24 @@
 <?php
-require_once('../src/db.php');
+// public/game_status.php
 session_start();
+require_once('../src/db.php');
 
-$lobby_id = $_SESSION['lobby_id'] ?? null;
-if (!$lobby_id) exit;
+$lid = $_SESSION['lobby_id'] ?? null;
+$pid = $_SESSION['player_id'] ?? null;
 
-// Get Lobby Status
-$stmt = $pdo->prepare("SELECT status, join_code FROM lobbies WHERE id = ?");
-$stmt->execute([$lobby_id]);
-$lobby = $stmt->fetch(PDO::FETCH_ASSOC);
+if (!$lid) exit(json_encode(['error' => 'No lobby']));
 
-// Get Players
-$stmt = $pdo->prepare("SELECT username, has_submitted, score FROM players WHERE lobby_id = ?");
-$stmt->execute([$lobby_id]);
-$players = $stmt->fetchAll(PDO::FETCH_ASSOC);
+$game = $pdo->query("SELECT status, join_code FROM lobbies WHERE id = $lid")->fetch();
+$me = $pdo->query("SELECT has_submitted FROM players WHERE id = $pid")->fetch();
 
-echo json_encode(['lobby' => $lobby, 'players' => $players]);
+// Logic to force a reload if the game state has moved forward
+$should_reload = false;
+if ($game['status'] === 'voting' && $_SESSION['last_status'] !== 'voting') {
+    $should_reload = true;
+}
+$_SESSION['last_status'] = $game['status'];
+
+echo json_encode([
+    'status_text' => "Lobby: {$game['join_code']} | Status: " . ucfirst($game['status']),
+    'should_reload' => $should_reload
+]);
