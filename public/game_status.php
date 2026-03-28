@@ -6,22 +6,31 @@ require_once('../src/db.php');
 $lid = $_SESSION['lobby_id'] ?? null;
 $pid = $_SESSION['player_id'] ?? null;
 
-if (!$lid || !$pid) exit(json_encode(['should_reload' => false]));
+if (!$lid || !$pid) {
+    echo json_encode(['should_reload' => false]);
+    exit;
+}
 
-$game = $pdo->query("SELECT status FROM lobbies WHERE id = $lid")->fetch();
-$players = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid")->fetchColumn();
+// Fetch the current lobby status and a "hash" of player submission status
+$stmt = $pdo->prepare("SELECT status, current_situation_id FROM lobbies WHERE id = ?");
+$stmt->execute([$lid]);
+$game = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// If status changes or a new player joins, tell the browser to refresh
+$stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE lobby_id = ?");
+$stmt->execute([$lid]);
+$player_count = $stmt->fetchColumn();
+
+// Create a unique string representing the current state
+$current_state_string = $game['status'] . "_" . $game['current_situation_id'] . "_" . $player_count;
+
 $should_reload = false;
-if ($game['status'] !== ($_SESSION['last_status'] ?? '')) {
-    $should_reload = true;
-    $_SESSION['last_status'] = $game['status'];
-}
-
-// Special case: if we are in 'waiting' but a second player joined
-if ($game['status'] === 'waiting' && $players > ($_SESSION['last_player_count'] ?? 1)) {
+if (isset($_SESSION['last_state_string']) && $_SESSION['last_state_string'] !== $current_state_string) {
     $should_reload = true;
 }
-$_SESSION['last_player_count'] = $players;
 
-echo json_encode(['should_reload' => $should_reload]);
+$_SESSION['last_state_string'] = $current_state_string;
+
+echo json_encode([
+    'should_reload' => $should_reload,
+    'status' => $game['status']
+]);
