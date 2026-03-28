@@ -6,7 +6,6 @@ require_once('../src/db.php');
 $player_id = $_SESSION['player_id'] ?? null;
 $lobby_id = $_SESSION['lobby_id'] ?? null;
 
-// Handle Join/Create
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $user = htmlspecialchars($_POST['username']);
     if ($_POST['action'] === 'create') {
@@ -28,9 +27,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     header("Location: play.php"); exit;
 }
 
-// State Fetching
 $game = $lobby_id ? $pdo->query("SELECT * FROM lobbies WHERE id = $lobby_id")->fetch(PDO::FETCH_ASSOC) : null;
 $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->fetch(PDO::FETCH_ASSOC) : null;
+$all_players = $lobby_id ? $pdo->query("SELECT * FROM players WHERE lobby_id = $lobby_id ORDER BY id ASC")->fetchAll() : [];
+$is_host = ($all_players && $all_players[0]['id'] == $player_id);
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -45,7 +45,7 @@ $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->f
             const d = await r.json();
             if (d.should_reload) window.location.reload();
         }
-        setInterval(sync, 3000);
+        setInterval(sync, 2500);
     </script>
 </head>
 <body>
@@ -67,28 +67,38 @@ $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->f
         </nav>
 
         <?php if ($game['status'] === 'waiting'): ?>
-            <div class="card-editor">
-                <h3>Waiting Room</h3>
-                <p>Send code <strong><?= $game['join_code'] ?></strong> to your opponent.</p>
-                <a href="actions.php?do=start" class="button" style="display:block; text-align:center; text-decoration:none;">Start Game</a>
+            <div class="card-editor" style="text-align:center;">
+                <h3>Lobby (<?= count($all_players) ?>/2 Players)</h3>
+                <p>Code: <strong><?= $game['join_code'] ?></strong></p>
+                <?php if ($is_host && count($all_players) >= 2): ?>
+                    <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">START GAME</a>
+                <?php elseif (!$is_host): ?>
+                    <p>Waiting for host to start...</p>
+                <?php else: ?>
+                    <p>Waiting for an opponent to join...</p>
+                <?php endif; ?>
             </div>
 
-        <?php elseif ($game['status'] === 'picking' && !$me['has_submitted']): ?>
-            <form action="actions.php?do=submit" method="POST">
-                <h3>Choose 1 Hero</h3>
-                <div class="item-list">
-                    <?php foreach($pdo->query("SELECT * FROM characters ORDER BY RANDOM() LIMIT 3") as $c): ?>
-                        <label class="item-card"><input type="radio" name="char" value="<?= $c['id'] ?>" required> <?= htmlspecialchars($c['description']) ?></label>
-                    <?php endforeach; ?>
-                </div>
-                <h3>Choose 1 Perk</h3>
-                <div class="item-list">
-                    <?php foreach($pdo->query("SELECT * FROM strengths ORDER BY RANDOM() LIMIT 3") as $s): ?>
-                        <label class="item-card"><input type="radio" name="str" value="<?= $s['id'] ?>" required> <?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</label>
-                    <?php endforeach; ?>
-                </div>
-                <button type="submit" style="margin-top:20px;">Lock In</button>
-            </form>
+        <?php elseif ($game['status'] === 'picking'): ?>
+            <?php if (!$me['has_submitted']): ?>
+                <form action="actions.php?do=submit" method="POST">
+                    <h3>Choose Your Hero</h3>
+                    <div class="item-list">
+                        <?php foreach($pdo->query("SELECT * FROM characters ORDER BY RANDOM() LIMIT 3") as $c): ?>
+                            <label class="item-card"><input type="radio" name="char" value="<?= $c['id'] ?>" required> <?= htmlspecialchars($c['description']) ?></label>
+                        <?php endforeach; ?>
+                    </div>
+                    <h3>Choose Your Perk</h3>
+                    <div class="item-list">
+                        <?php foreach($pdo->query("SELECT * FROM strengths ORDER BY RANDOM() LIMIT 3") as $s): ?>
+                            <label class="item-card"><input type="radio" name="str" value="<?= $s['id'] ?>" required> <?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</label>
+                        <?php endforeach; ?>
+                    </div>
+                    <button type="submit" style="margin-top:20px;">LOCK IN</button>
+                </form>
+            <?php else: ?>
+                <div class="card-editor"><h3>Hero Submitted!</h3><p>Waiting for opponent...</p></div>
+            <?php endif; ?>
 
         <?php elseif ($game['status'] === 'voting'): ?>
             <?php
@@ -106,25 +116,19 @@ $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->f
                         <p style="color:var(--secondary);">Perk: <?= htmlspecialchars($p['s_d']) ?> (+<?= $p['points'] ?>)</p>
                         <p style="color:var(--error);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
                         <?php if ($p['id'] != $player_id && !$me['voted_for_id']): ?>
-                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center;">Vote</a>
-                        <?php elseif ($me['voted_for_id']): ?>
-                            <p><em>Vote Cast</em></p>
+                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center;">VOTE</a>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
             </div>
 
-        <?php elseif ($game['status'] === 'result' || $me['has_submitted']): ?>
+        <?php elseif ($game['status'] === 'result'): ?>
             <div class="card-editor" style="text-align:center;">
-                <?php if ($game['status'] === 'result'): ?>
-                    <h2>Scoreboard</h2>
-                    <?php foreach($pdo->query("SELECT username, score FROM players WHERE lobby_id = $lobby_id ORDER BY score DESC") as $r): ?>
-                        <p><?= $r['username'] ?>: <?= $r['score'] ?> pts</p>
-                    <?php endforeach; ?>
-                    <a href="actions.php?do=start" class="button" style="text-decoration:none; display:block;">Next Round</a>
-                <?php else: ?>
-                    <p>Waiting for opponent...</p>
-                <?php endif; ?>
+                <h2>Results</h2>
+                <?php foreach($all_players as $r): ?>
+                    <p><strong><?= htmlspecialchars($r['username']) ?>:</strong> <?= $r['score'] ?> Total Points</p>
+                <?php endforeach; ?>
+                <a href="actions.php?do=start" class="button" style="text-decoration:none; display:block;">NEXT ROUND</a>
             </div>
         <?php endif; ?>
     <?php endif; ?>
