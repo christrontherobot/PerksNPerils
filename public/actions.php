@@ -7,22 +7,28 @@ $do = $_GET['do'] ?? '';
 $pid = $_SESSION['player_id'] ?? null;
 $lid = $_SESSION['lobby_id'] ?? null;
 
-if (!$pid || !$lid) { 
-    header("Location: play.php"); 
-    exit; 
+// Only redirect if we are trying to do an action without being logged in
+if (!$pid || !$lid) {
+    if ($do !== '') {
+        header("Location: play.php");
+        exit;
+    }
 }
 
 if ($do === 'start') {
     $pdo->query("UPDATE players SET has_submitted = false, char_id = null, strength_id = null, weakness_id = null, voted_for_id = null WHERE lobby_id = $lid");
     $pdo->query("UPDATE lobbies SET status = 'picking', current_situation_id = null WHERE id = $lid");
     header("Location: play.php");
+    exit;
 }
 
 if ($do === 'submit') {
-    $char = $_POST['char'];
-    $str = $_POST['str'];
-    $stmt = $pdo->prepare("UPDATE players SET char_id = ?, strength_id = ?, has_submitted = true WHERE id = ?");
-    $stmt->execute([$char, $str, $pid]);
+    $char = $_POST['char'] ?? null;
+    $str = $_POST['str'] ?? null;
+    if ($char && $str) {
+        $stmt = $pdo->prepare("UPDATE players SET char_id = ?, strength_id = ?, has_submitted = true WHERE id = ?");
+        $stmt->execute([$char, $str, $pid]);
+    }
 
     $readyCount = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid AND has_submitted = true")->fetchColumn();
     if ($readyCount >= 2) {
@@ -36,6 +42,7 @@ if ($do === 'submit') {
         $stmt->execute([$sit, $lid]);
     }
     header("Location: play.php");
+    exit;
 }
 
 if ($do === 'vote') {
@@ -58,6 +65,7 @@ if ($do === 'vote') {
         $pdo->query("UPDATE lobbies SET status = 'result' WHERE id = $lid");
     }
     header("Location: play.php");
+    exit;
 }
 
 if ($do === 'leave') {
