@@ -11,16 +11,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['description'])) {
     if ($current_type === 'characters') {
         $stmt = $pdo->prepare("INSERT INTO characters (description, image_url) VALUES (?, ?)");
         $stmt->execute([$_POST['description'], $_POST['image_url'] ?? '']);
+    } elseif ($current_type === 'strengths') {
+        $stmt = $pdo->prepare("INSERT INTO strengths (description, points) VALUES (?, ?)");
+        $stmt->execute([$_POST['description'], (int)($_POST['points'] ?? 0)]);
     } else {
         $stmt = $pdo->prepare("INSERT INTO $current_type (description) VALUES (?)");
         $stmt->execute([$_POST['description']]);
     }
-    // Refresh to clear post data
     header("Location: manage.php?type=$current_type");
     exit;
 }
 
-// Fetch Items
 $items = $pdo->query("SELECT * FROM $current_type ORDER BY id DESC")->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
@@ -28,47 +29,46 @@ $items = $pdo->query("SELECT * FROM $current_type ORDER BY id DESC")->fetchAll(P
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Perks n' Perils | Editor</title>
     <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
     <nav>
-        <strong>PERKS N' PERILS</strong>
+        <strong style="width: 100%; margin-bottom: 5px;">Perks n' Perils</strong>
         <?php foreach($types as $t): ?>
-            <a href="?type=<?= $t ?>" class="<?= $current_type == $t ? 'active' : '' ?>">
-                <?= ucfirst($t) ?>
-            </a>
+            <a href="?type=<?= $t ?>" class="<?= $current_type == $t ? 'active' : '' ?>"><?= ucfirst($t) ?></a>
         <?php endforeach; ?>
-        <a href="logout.php" style="margin-left: auto; color: #666;">Logout</a>
     </nav>
 
     <div class="card-editor">
-        <h2>Add New <?= ucfirst(substr($current_type, 0, -1)) ?></h2>
+        <h3>Add <?= ucfirst(substr($current_type, 0, -1)) ?></h3>
         <form method="POST">
-            <textarea name="description" placeholder="Enter card text..." rows="3" required></textarea>
+            <textarea name="description" placeholder="Description..." rows="2" required></textarea>
+            
             <?php if($current_type === 'characters'): ?>
-                <input type="text" name="image_url" placeholder="Direct Image URL (optional)">
+                <input type="text" name="image_url" placeholder="Image URL (Portrait)">
             <?php endif; ?>
-            <button type="submit">Add to Deck</button>
+
+            <?php if($current_type === 'strengths'): ?>
+                <input type="number" name="points" placeholder="Point Value (0-10)" min="0" max="10">
+            <?php endif; ?>
+
+            <button type="submit">Save Card</button>
         </form>
     </div>
 
     <div class="item-list">
-        <?php if(empty($items)): ?>
-            <p style="grid-column: 1/-1; text-align: center; color: #666;">No items found in this category.</p>
-        <?php endif; ?>
-
         <?php foreach($items as $item): ?>
             <div class="item-card">
-                <a class="delete-btn" title="Delete Card" href="delete.php?type=<?= $current_type ?>&id=<?= $item['id'] ?>" onclick="return confirm('Permanently delete this card?')">✖</a>
+                <a class="delete-btn" href="delete.php?type=<?= $current_type ?>&id=<?= $item['id'] ?>" onclick="return confirm('Delete?')">✖</a>
                 
-                <?php if($current_type === 'characters'): ?>
-                    <?php if(!empty($item['image_url'])): ?>
-                        <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Portrait">
-                    <?php else: ?>
-                        <div style="height: 180px; background: #1a1a1a; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 15px; color: #444;">No Image</div>
-                    <?php endif; ?>
+                <?php if($current_type === 'strengths'): ?>
+                    <span class="badge">Value: <?= $item['points'] ?></span>
+                <?php endif; ?>
+
+                <?php if($current_type === 'characters' && !empty($item['image_url'])): ?>
+                    <img src="<?= htmlspecialchars($item['image_url']) ?>" alt="Portrait">
                 <?php endif; ?>
                 
                 <p><?= htmlspecialchars($item['description']) ?></p>
