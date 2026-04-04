@@ -11,17 +11,16 @@ if (!$lid || !$pid) {
     exit;
 }
 
-// Fetch the current lobby status and a "hash" of player submission status
 $stmt = $pdo->prepare("SELECT status, current_situation_id FROM lobbies WHERE id = ?");
 $stmt->execute([$lid]);
 $game = $stmt->fetch(PDO::FETCH_ASSOC);
 
-$stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE lobby_id = ?");
+$stmt = $pdo->prepare("SELECT COUNT(*) as total, COUNT(voted_for_id) as voted, COUNT(CASE WHEN has_submitted THEN 1 END) as submitted FROM players WHERE lobby_id = ?");
 $stmt->execute([$lid]);
-$player_count = $stmt->fetchColumn();
+$p_stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
-// Create a unique string representing the current state
-$current_state_string = $game['status'] . "_" . $game['current_situation_id'] . "_" . $player_count;
+// Detects status change, situation change, OR a change in player count/readiness
+$current_state_string = $game['status'] . "_" . $game['current_situation_id'] . "_" . $p_stats['total'] . "_" . $p_stats['submitted'] . "_" . $p_stats['voted'];
 
 $should_reload = false;
 if (isset($_SESSION['last_state_string']) && $_SESSION['last_state_string'] !== $current_state_string) {

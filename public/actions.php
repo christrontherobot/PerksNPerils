@@ -12,13 +12,10 @@ if (!$pid || !$lid) {
 }
 
 if ($do === 'start') {
-    // Pick the situation NOW so it shows during picking
     $new_sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
-    
     $stmt = $pdo->prepare("UPDATE lobbies SET status = 'picking', current_situation_id = ? WHERE id = ?");
     $stmt->execute([$new_sit, $lid]);
     
-    // Reset player round data
     $pdo->prepare("UPDATE players SET has_submitted = false, char_id = null, strength_id = null, weakness_id = null, voted_for_id = null WHERE lobby_id = ?")
         ->execute([$lid]);
         
@@ -34,9 +31,10 @@ if ($do === 'submit') {
         $stmt->execute([$char, $str, $pid]);
     }
 
+    $totalInLobby = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid")->fetchColumn();
     $readyCount = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid AND has_submitted = true")->fetchColumn();
-    if ($readyCount >= 2) {
-        // Assign random Perils
+    
+    if ($readyCount >= $totalInLobby && $totalInLobby >= 2) {
         $players = $pdo->query("SELECT id FROM players WHERE lobby_id = $lid")->fetchAll();
         foreach($players as $p) {
             $wk = $pdo->query("SELECT id FROM weaknesses ORDER BY RANDOM() LIMIT 1")->fetchColumn();
@@ -53,18 +51,25 @@ if ($do === 'vote') {
     $stmt = $pdo->prepare("UPDATE players SET voted_for_id = ? WHERE id = ?");
     $stmt->execute([$target_id, $pid]);
 
+    $totalInLobby = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid")->fetchColumn();
     $voteCount = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid AND voted_for_id IS NOT NULL")->fetchColumn();
-    if ($voteCount >= 2) {
+    
+    if ($voteCount >= $totalInLobby && $totalInLobby >= 2) {
         $votes = $pdo->query("SELECT voted_for_id, COUNT(*) as qty FROM players WHERE lobby_id = $lid GROUP BY voted_for_id ORDER BY qty DESC")->fetchAll(PDO::FETCH_ASSOC);
         
-        // Award points if not a tie
-        if (count($votes) === 1 || (count($votes) > 1 && $votes[0]['qty'] > $votes[1]['qty'])) {
-            $winner_id = $votes[0]['voted_for_id'];
-            $stmt = $pdo->prepare("SELECT s.points FROM players p JOIN strengths s ON p.strength_id = s.id WHERE p.id = ?");
-            $stmt->execute([$winner_id]);
-            $perk_pts = (int)$stmt->fetchColumn();
-            $stmt = $pdo->prepare("UPDATE players SET score = score + ? WHERE id = ?");
-            $stmt->execute([10 + $perk_pts, $winner_id]);
+        if (count($votes) > 0) {
+            $maxVotes = $votes[0]['qty'];
+            $winners = array_filter($votes, function($v) use ($maxVotes) { return $v['qty'] == $maxVotes; });
+
+            // If there's no tie for 1st place, award points
+            if (count($winners) === 1) {
+                $winner_id = $winners[0]['voted_for_id'];
+                $stmt = $pdo->prepare("SELECT s.points FROM players p JOIN strengths s ON p.strength_id = s.id WHERE p.id = ?");
+                $stmt->execute([$winner_id]);
+                $perk_pts = (int)$stmt->fetchColumn();
+                $stmt = $pdo->prepare("UPDATE players SET score = score + ? WHERE id = ?");
+                $stmt->execute([10 + $perk_pts, $winner_id]);
+            }
         }
         $pdo->query("UPDATE lobbies SET status = 'result' WHERE id = $lid");
     }

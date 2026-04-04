@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $user = htmlspecialchars($_POST['username']);
     if ($_POST['action'] === 'create') {
         $code = strtoupper(substr(md5(time()), 0, 6));
-        // Pick initial situation immediately on lobby creation
         $sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
         $stmt = $pdo->prepare("INSERT INTO lobbies (join_code, status, current_situation_id) VALUES (?, 'waiting', ?) RETURNING id");
         $stmt->execute([$code, $sit]);
@@ -21,7 +20,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $stmt->execute([$code]);
         $lobby_id = $stmt->fetchColumn();
     }
+    
+    // Check if lobby is full (max 6) before joining
     if ($lobby_id) {
+        $count = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lobby_id")->fetchColumn();
+        if ($count >= 6) {
+            die("Lobby is full. <a href='play.php'>Back</a>");
+        }
+        
         $stmt = $pdo->prepare("INSERT INTO players (lobby_id, username) VALUES (?, ?) RETURNING id");
         $stmt->execute([$lobby_id, $user]);
         $_SESSION['player_id'] = $stmt->fetchColumn();
@@ -78,11 +84,13 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
 
         <?php if ($game['status'] === 'waiting'): ?>
             <div class="card-editor" style="text-align:center;">
-                <h3>Lobby (<?= count($all_players) ?>/2)</h3>
+                <h3>Lobby (<?= count($all_players) ?>/6)</h3>
                 <?php if ($is_host && count($all_players) >= 2): ?>
                     <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">START GAME</a>
+                <?php elseif (count($all_players) < 2): ?>
+                    <p>Waiting for at least one more player...</p>
                 <?php else: ?>
-                    <p>Waiting for players...</p>
+                    <p>Waiting for host to start...</p>
                 <?php endif; ?>
             </div>
 
@@ -108,7 +116,7 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
                     <button type="submit" style="margin-top:20px;">LOCK IN</button>
                 </form>
             <?php else: ?>
-                <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponent...</p></div>
+                <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponents...</p></div>
             <?php endif; ?>
 
         <?php elseif ($game['status'] === 'voting'): ?>
@@ -136,7 +144,11 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
                 <?php foreach($all_players as $r): ?>
                     <p><strong><?= htmlspecialchars($r['username']) ?>:</strong> <?= $r['score'] ?> pts</p>
                 <?php endforeach; ?>
-                <a href="actions.php?do=start" class="button" style="text-decoration:none; display:block;">NEXT ROUND</a>
+                <?php if ($is_host): ?>
+                    <a href="actions.php?do=start" class="button" style="text-decoration:none; display:block;">NEXT ROUND</a>
+                <?php else: ?>
+                    <p>Waiting for host to start next round...</p>
+                <?php endif; ?>
             </div>
         <?php endif; ?>
     <?php endif; ?>
