@@ -18,6 +18,10 @@ if ($do === 'start') {
     
     $pdo->prepare("UPDATE players SET has_submitted = false, char_id = null, strength_id = null, weakness_id = null, voted_for_id = null WHERE lobby_id = ?")
         ->execute([$lid]);
+    
+    // Clear any old hand from previous rounds
+    unset($_SESSION['my_hero_options']);
+    unset($_SESSION['my_perk_options']);
         
     header("Location: play.php");
     exit;
@@ -61,7 +65,6 @@ if ($do === 'vote') {
             $maxVotes = $votes[0]['qty'];
             $winners = array_filter($votes, function($v) use ($maxVotes) { return $v['qty'] == $maxVotes; });
 
-            // If there's no tie for 1st place, award points
             if (count($winners) === 1) {
                 $winner_id = $winners[0]['voted_for_id'];
                 $stmt = $pdo->prepare("SELECT s.points FROM players p JOIN strengths s ON p.strength_id = s.id WHERE p.id = ?");

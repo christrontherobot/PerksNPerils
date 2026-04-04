@@ -21,12 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $lobby_id = $stmt->fetchColumn();
     }
     
-    // Check if lobby is full (max 6) before joining
     if ($lobby_id) {
         $count = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lobby_id")->fetchColumn();
-        if ($count >= 6) {
-            die("Lobby is full. <a href='play.php'>Back</a>");
-        }
+        if ($count >= 6) { die("Lobby is full. <a href='play.php'>Back</a>"); }
         
         $stmt = $pdo->prepare("INSERT INTO players (lobby_id, username) VALUES (?, ?) RETURNING id");
         $stmt->execute([$lobby_id, $user]);
@@ -41,6 +38,16 @@ $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->f
 $all_players = $lobby_id ? $pdo->query("SELECT * FROM players WHERE lobby_id = $lobby_id ORDER BY id ASC")->fetchAll() : [];
 $is_host = ($all_players && $all_players[0]['id'] == $player_id);
 $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT description FROM situations WHERE id = ".(int)$game['current_situation_id'])->fetchColumn() : "Waiting...";
+
+// --- SELECTION LOGIC: ROLL HAND ONCE PER ROUND ---
+if ($game && $game['status'] === 'picking' && !$me['has_submitted']) {
+    if (!isset($_SESSION['my_hero_options'])) {
+        $_SESSION['my_hero_options'] = $pdo->query("SELECT * FROM characters ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
+    }
+    if (!isset($_SESSION['my_perk_options'])) {
+        $_SESSION['my_perk_options'] = $pdo->query("SELECT * FROM strengths ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -74,11 +81,11 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
         </div>
     <?php else: ?>
         <nav>
-            <strong>Lobby: <?= htmlspecialchars($game['join_code']) ?></strong>
-            <a href="actions.php?do=leave" style="margin-left:auto; color:var(--error); text-decoration:none; font-size:0.8rem;">LEAVE</a>
+            <strong>Lobby: <?= htmlspecialchars($game['join_code'] ?? '') ?></strong>
+            <a href="actions.php?do=leave" style="margin-left:auto; color:var(--poke-yellow); text-decoration:none; font-size:0.8rem;">LEAVE</a>
         </nav>
 
-        <div class="badge" style="display:block; text-align:center; padding:15px; margin-bottom:20px; background:rgba(255,255,255,0.1);">
+        <div class="badge">
             <strong>CURRENT SITUATION:</strong><br><?= htmlspecialchars($situation_text) ?>
         </div>
 
@@ -99,24 +106,30 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
                 <form action="actions.php?do=submit" method="POST">
                     <h3>Choose Hero</h3>
                     <div class="item-list">
-                        <?php foreach($pdo->query("SELECT * FROM characters ORDER BY RANDOM() LIMIT 3") as $c): ?>
+                        <?php foreach($_SESSION['my_hero_options'] as $c): ?>
                             <label class="item-card">
                                 <input type="radio" name="char" value="<?= $c['id'] ?>" required>
-                                <?php if($c['image_url']): ?><img src="<?= htmlspecialchars($c['image_url']) ?>" style="width:100%; border-radius:5px; margin-bottom:5px;"><?php endif; ?>
-                                <?= htmlspecialchars($c['description']) ?>
+                                <?php if(!empty($c['image_url'])): ?><img src="<?= htmlspecialchars($c['image_url']) ?>"><?php endif; ?>
+                                <strong><?= htmlspecialchars($c['description']) ?></strong>
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <h3>Choose Perk</h3>
+                    <h3 style="margin-top:30px;">Choose Perk</h3>
                     <div class="item-list">
-                        <?php foreach($pdo->query("SELECT * FROM strengths ORDER BY RANDOM() LIMIT 3") as $s): ?>
-                            <label class="item-card"><input type="radio" name="str" value="<?= $s['id'] ?>" required> <?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</label>
+                        <?php foreach($_SESSION['my_perk_options'] as $s): ?>
+                            <label class="item-card">
+                                <input type="radio" name="str" value="<?= $s['id'] ?>" required> 
+                                <p style="color:var(--poke-blue);"><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
+                            </label>
                         <?php endforeach; ?>
                     </div>
-                    <button type="submit" style="margin-top:20px;">LOCK IN</button>
+                    <button type="submit" style="margin-top:30px;">LOCK IN</button>
                 </form>
             <?php else: ?>
-                <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponents...</p></div>
+                <div class="card-editor" style="text-align:center;">
+                    <h3>Locked In</h3>
+                    <p>Waiting for others to finish their hand...</p>
+                </div>
             <?php endif; ?>
 
         <?php elseif ($game['status'] === 'voting'): ?>
@@ -127,12 +140,12 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
                 foreach($stmt->fetchAll() as $p): ?>
                     <div class="item-card">
                         <strong><?= htmlspecialchars($p['username']) ?></strong>
-                        <?php if($p['c_img']): ?><img src="<?= htmlspecialchars($p['c_img']) ?>" style="width:100%; border-radius:8px; margin:10px 0;"><?php endif; ?>
+                        <?php if(!empty($p['c_img'])): ?><img src="<?= htmlspecialchars($p['c_img']) ?>"><?php endif; ?>
                         <p>Hero: <?= htmlspecialchars($p['c_d']) ?></p>
-                        <p style="color:var(--secondary);">Perk: <?= htmlspecialchars($p['s_d']) ?> (+<?= $p['points'] ?>)</p>
-                        <p style="color:var(--error);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
+                        <p style="color:green;">Perk: <?= htmlspecialchars($p['s_d']) ?> (+<?= $p['points'] ?>)</p>
+                        <p style="color:var(--poke-red);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
                         <?php if (!$me['voted_for_id']): ?>
-                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center;">VOTE</a>
+                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center; margin-top:10px;">VOTE</a>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -142,10 +155,13 @@ $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT
             <div class="card-editor" style="text-align:center;">
                 <h2>Leaderboard</h2>
                 <?php foreach($all_players as $r): ?>
-                    <p><strong><?= htmlspecialchars($r['username']) ?>:</strong> <?= $r['score'] ?> pts</p>
+                    <div class="leaderboard-item">
+                        <span><?= htmlspecialchars($r['username']) ?></span>
+                        <span><?= $r['score'] ?> pts</span>
+                    </div>
                 <?php endforeach; ?>
                 <?php if ($is_host): ?>
-                    <a href="actions.php?do=start" class="button" style="text-decoration:none; display:block;">NEXT ROUND</a>
+                    <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none; margin-top:20px;">NEXT ROUND</a>
                 <?php else: ?>
                     <p>Waiting for host to start next round...</p>
                 <?php endif; ?>
