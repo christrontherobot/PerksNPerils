@@ -6,6 +6,15 @@ require_once('../src/db.php');
 $player_id = $_SESSION['player_id'] ?? null;
 $lobby_id = $_SESSION['lobby_id'] ?? null;
 
+// Basic Session Check
+if (!$player_id || !$lobby_id) {
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        // If session lost, clear everything and show login
+        session_destroy();
+        $player_id = null; $lobby_id = null;
+    }
+}
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $user = htmlspecialchars($_POST['username']);
     if ($_POST['action'] === 'create') {
@@ -39,7 +48,8 @@ $all_players = $lobby_id ? $pdo->query("SELECT * FROM players WHERE lobby_id = $
 $is_host = ($all_players && $all_players[0]['id'] == $player_id);
 $situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT description FROM situations WHERE id = ".(int)$game['current_situation_id'])->fetchColumn() : "Waiting...";
 
-// --- SELECTION LOGIC: ROLL HAND ONCE PER ROUND ---
+// --- ROUND HAND LOGIC ---
+// This only runs when the round starts (status = picking) and the player has no hand yet.
 if ($game && $game['status'] === 'picking' && !$me['has_submitted']) {
     if (!isset($_SESSION['my_hero_options'])) {
         $_SESSION['my_hero_options'] = $pdo->query("SELECT * FROM characters ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_ASSOC);
@@ -82,7 +92,7 @@ if ($game && $game['status'] === 'picking' && !$me['has_submitted']) {
     <?php else: ?>
         <nav>
             <strong>Lobby: <?= htmlspecialchars($game['join_code'] ?? '') ?></strong>
-            <a href="actions.php?do=leave" style="margin-left:auto; color:var(--poke-yellow); text-decoration:none; font-size:0.8rem;">LEAVE</a>
+            <a href="actions.php?do=leave" style="margin-left:auto; color:white; text-decoration:none; font-size:0.8rem; background:var(--poke-red); padding:5px 10px; border:2px solid #000;">LEAVE</a>
         </nav>
 
         <div class="badge">
@@ -102,7 +112,7 @@ if ($game && $game['status'] === 'picking' && !$me['has_submitted']) {
             </div>
 
         <?php elseif ($game['status'] === 'picking'): ?>
-            <?php if (!$me['has_submitted']): ?>
+            <?php if (!$me['has_submitted'] && isset($_SESSION['my_hero_options'])): ?>
                 <form action="actions.php?do=submit" method="POST">
                     <h3>Choose Hero</h3>
                     <div class="item-list">
@@ -128,7 +138,7 @@ if ($game && $game['status'] === 'picking' && !$me['has_submitted']) {
             <?php else: ?>
                 <div class="card-editor" style="text-align:center;">
                     <h3>Locked In</h3>
-                    <p>Waiting for others to finish their hand...</p>
+                    <p>Waiting for opponents...</p>
                 </div>
             <?php endif; ?>
 

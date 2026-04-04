@@ -12,14 +12,16 @@ if (!$pid || !$lid) {
 }
 
 if ($do === 'start') {
+    // 1. Pick a new situation for the lobby
     $new_sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
     $stmt = $pdo->prepare("UPDATE lobbies SET status = 'picking', current_situation_id = ? WHERE id = ?");
     $stmt->execute([$new_sit, $lid]);
     
+    // 2. Reset round-specific data for ALL players in the database
     $pdo->prepare("UPDATE players SET has_submitted = false, char_id = null, strength_id = null, weakness_id = null, voted_for_id = null WHERE lobby_id = ?")
         ->execute([$lid]);
     
-    // Clear any old hand from previous rounds
+    // 3. CRITICAL: Clear the local session hand so play.php generates a NEW one for this round
     unset($_SESSION['my_hero_options']);
     unset($_SESSION['my_perk_options']);
         
