@@ -1,25 +1,32 @@
-/* public/css/style.css - Perks n' Perils: Trainer Edition */
+/* public/css/style.css - Perks n' Perils: Party Edition */
 
 :root {
-    --bg-table: #2d5a27; /* Deep card-table green */
-    --card-cream: #fdf5e6; /* Old-school card stock */
-    --poke-red: #ff0000; /* Classic Red Version */
-    --poke-blue: #3b4cca; /* Classic Blue Version */
-    --poke-yellow: #ffde00; /* Highlight Yellow */
+    /* Main colors: Preservation of the core red/blue duel */
+    --poke-red: #cc0000;
+    --poke-blue: #3b4cca;
+    --poke-yellow: #ffde00; /* Use this for point displays/highlights */
+    
+    /* Backgrounds: The physical, comedic card table */
+    --bg-felt: #2d5a27; /* Felt Green */
+    --card-cream: #fdf5e6; /* Retro paper stock */
+    --card-shadow: 5px 5px 0px rgba(0,0,0,0.3); /* Physical box shadow */
+    
+    /* Global Text and Border */
     --text-dark: #2c2c2c;
-    --border-thick: 4px solid #000;
+    --border-thick: 4px solid #000; /* Crucial for Pokemon style */
 }
 
+/* Base Body: Felt Table and Typography */
 body { 
-    background-color: var(--bg-table);
-    background-image: 
-        radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%),
-        url('https://www.transparenttextures.com/patterns/felt.png'); /* Adds a felt texture */
+    background-color: var(--bg-felt);
+    background-image: radial-gradient(circle at 50% 50%, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%),
+                      url('https://www.transparenttextures.com/patterns/felt.png');
     color: var(--text-dark); 
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+    font-family: 'Segoe UI', 'Roboto', 'Arial', sans-serif; /* Clean, bold typography */
     margin: 0;
     min-height: 100vh;
     padding: 20px;
+    line-height: 1.4;
 }
 
 .game-container {
@@ -27,147 +34,207 @@ body {
     margin: 0 auto;
 }
 
-/* Navigation & Lobby Header */
+/* LOBBY HEADER: High-Stakes Red Vs. Blue Header */
 nav { 
     background: var(--poke-red); 
-    padding: 15px; 
-    border-radius: 0; /* Boxy retro style */
+    padding: 20px; 
+    border-radius: 8px 8px 0 0;
     margin-bottom: 30px; 
     display: flex;
     justify-content: space-between;
     align-items: center;
     border: var(--border-thick);
-    box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.2);
 }
 
 nav strong {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     color: white;
     text-transform: uppercase;
     letter-spacing: 2px;
-    -webkit-text-stroke: 1px var(--poke-blue);
+    font-weight: 900;
+    -webkit-text-stroke: 1.5px var(--poke-blue);
+    text-shadow: 2px 2px 0 var(--border-thick);
 }
 
-/* Situation Badge - Looks like a Professor Oak Message Box */
+/* LEAVE Button */
+nav a {
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    background: var(--poke-blue);
+    padding: 8px 15px;
+    border: 3px solid #000;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+}
+
+/* SITUATION BADGE: professor Oak's Message Box */
 .badge {
     background: var(--card-cream);
     border: var(--border-thick);
     color: var(--text-dark);
     padding: 20px;
     border-radius: 8px;
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: bold;
     margin-bottom: 30px;
-    box-shadow: 6px 6px 0px rgba(0,0,0,0.2);
+    box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
     position: relative;
+    text-align: center;
 }
 
+/* Blinking Arrow Animation for the "Dialogue Box" */
 .badge::after {
     content: "▼";
     position: absolute;
     bottom: 10px;
     right: 20px;
     color: var(--poke-red);
-    animation: bounce 1s infinite;
+    animation: blink_arrow 1s infinite;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(5px); }
+@keyframes blink_arrow {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0; transform: translateY(3px); }
 }
 
-/* Button Styling - Red vs Blue */
+/* BUTTONS: Retro Party Styling */
 .button, button { 
     background: var(--poke-blue);
     color: white; 
     border: var(--border-thick);
-    padding: 12px 20px; 
+    padding: 14px 24px; 
     cursor: pointer; 
     font-weight: 900;
     text-transform: uppercase;
     transition: transform 0.1s;
-    box-shadow: 4px 4px 0px #000;
+    box-shadow: 5px 5px 0px #000;
+    font-size: 1rem;
+    letter-spacing: 1px;
 }
 
+/* Physical "Press" Animation */
 button:active, .button:active {
-    transform: translate(2px, 2px);
+    transform: translate(3px, 3px);
     box-shadow: 2px 2px 0px #000;
 }
 
+/* RED (HOST/START) and BLUE (JOIN/VOTE) splits */
 button[value="create"], .host-btn { background: var(--poke-red); }
 button[value="join"], .join-btn { background: var(--poke-blue); }
 
-/* The Playing Cards - Cream colored stock */
+/* GRID SYSTEM: Physical Table Layout */
 .item-list { 
     display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 25px; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; 
 }
 
+/* THE CARDS: Physical 3D Feel */
 .item-card { 
     background: var(--card-cream);
-    padding: 15px;
+    padding: 18px;
     border: 3px solid #333;
     border-radius: 12px; 
     position: relative; 
-    box-shadow: 5px 5px 15px rgba(0,0,0,0.4);
-    transition: transform 0.2s;
+    box-shadow: var(--card-shadow);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Snappy party animation */
+    display: flex;
+    flex-direction: column;
 }
 
+/* Playful, chaotic card tilt on hover */
 .item-card:hover {
-    transform: rotate(-1deg) translateY(-5px);
+    transform: rotate(-1deg) translateY(-8px);
     z-index: 10;
 }
 
+/* Card image (The image_0.png style heroes) */
 .item-card img { 
     width: 100%; 
     border: var(--border-thick);
     border-radius: 4px; 
-    margin-bottom: 10px; 
+    margin-bottom: 12px; 
     aspect-ratio: 1/1; 
     object-fit: cover; 
     background: white;
 }
 
+/* The "Type Icon" (Icon_Circle) for Perks/Perils */
+.icon-circle {
+    width: 45px;
+    height: 45px;
+    background: var(--card-cream);
+    border: 3px solid #000;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    margin: 0 auto 12px;
+    box-shadow: 3px 3px 0px rgba(0,0,0,0.2);
+}
+
 .item-card strong {
     color: var(--poke-blue);
-    font-size: 1.1rem;
+    font-size: 1.2rem;
     display: block;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
+    text-align: center;
 }
 
-/* Status colors within cards */
-.item-card p { margin: 5px 0; font-size: 0.9rem; font-weight: bold; }
-.item-card p[style*="secondary"] { color: #228b22; } /* Perk Green */
-.item-card p[style*="error"] { color: var(--poke-red); } /* Peril Red */
+.item-card p {
+    margin: 6px 0;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+}
 
-/* Login/Host Editor - Centered like a deck of cards */
+/* Status colors (Must match PHP colors) */
+p[style*="green"] { color: #228b22; } /* Perk Green */
+p[style*="poke-red"] { color: var(--poke-red); } /* Peril Red */
+
+/* EDITOR/LOGIN/WAITING BOX: The "Boxed Game" look */
 .card-editor { 
     background: var(--card-cream); 
-    padding: 30px; 
-    border-radius: 15px; 
+    padding: 40px 30px; 
+    border-radius: 20px; 
     border: var(--border-thick); 
-    max-width: 350px;
-    margin: 50px auto;
+    max-width: 400px;
+    margin: 80px auto;
     box-shadow: 15px 15px 0px rgba(0,0,0,0.3);
+    text-align: center;
 }
 
+/* Bold inputs for crazy names */
 input[type="text"] { 
     background: white;
-    border: 2px solid #000;
-    padding: 10px;
-    margin-bottom: 10px;
+    border: 3px solid #000;
+    padding: 12px;
+    margin-bottom: 15px;
     font-weight: bold;
+    font-size: 1.1rem;
+    color: var(--text-dark);
 }
 
-/* Leaderboard Rows */
+input[type="text"]:focus {
+    outline: none;
+    border-color: var(--poke-blue);
+    box-shadow: 0 0 10px rgba(59, 76, 202, 0.4);
+}
+
+/* LEADERBOARD ITEM: The Professor Oak Scoreboard */
 .leaderboard-item {
-    background: rgba(255, 255, 255, 0.8);
-    border-left: 10px solid var(--poke-yellow);
-    margin-bottom: 8px;
-    padding: 10px;
-    font-weight: bold;
+    background: rgba(255, 255, 255, 0.9);
+    border-left: 12px solid var(--poke-yellow);
+    margin-bottom: 10px;
+    padding: 15px;
+    font-weight: 900;
     display: flex;
     justify-content: space-between;
-    border: 2px solid #000;
+    align-items: center;
+    border: 3px solid #000;
+    box-shadow: var(--card-shadow);
 }
