@@ -87,8 +87,8 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
             <form method="POST">
                 <input type="text" name="username" placeholder="Nickname" required>
                 <input type="text" name="join_code" placeholder="Join Code (Optional)">
-                <button type="submit" name="action" value="create" style="background:var(--sketch-red); color:white;">Host Game</button>
-                <button type="submit" name="action" value="join">Join Game</button>
+                <button type="submit" name="action" value="create" onclick="startMusic()" style="background:var(--sketch-red); color:white;">Host Game</button>
+                <button type="submit" name="action" value="join" onclick="startMusic()">Join Game</button>
             </form>
         </div>
     <?php else: ?>
