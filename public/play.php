@@ -12,12 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $code = strtoupper(substr(md5(time()), 0, 6));
         $sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
         $stmt = $pdo->prepare("INSERT INTO lobbies (join_code, status, current_situation_id) VALUES (?, 'waiting', ?) RETURNING id");
-        $stmt->execute([code, sit]);
+        // FIXED: Added $ to variable names below
+        $stmt->execute([$code, $sit]); 
         $lobby_id = $stmt->fetchColumn();
     } else {
         $code = strtoupper($_POST['join_code']);
         $stmt = $pdo->prepare("SELECT id FROM lobbies WHERE join_code = ?");
-        $stmt->execute([code]);
+        $stmt->execute([$code]);
         $lobby_id = $stmt->fetchColumn();
     }
     
@@ -60,7 +61,6 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
         }
         setInterval(sync, 2000);
 
-        // Music Trigger: Browsers block auto-play until a click happens
         function startMusic() {
             const audio = document.getElementById('bgm');
             if (audio && audio.paused) {
@@ -129,7 +129,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
         <?php elseif ($game['status'] === 'picking'): ?>
             <?php if (!$me['has_submitted']): ?>
                 <form action="actions.php?do=submit" method="POST">
-                    <h3 style="color:white; text-shadow: 2px 2px 0 #000;">Choose Hero</h3>
+                    <h3 class="section-title">Choose Hero</h3>
                     <div class="item-list">
                         <?php foreach($my_heroes as $c): ?>
                             <label class="item-card">
@@ -139,16 +139,16 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <h3 style="margin-top:30px; color:white; text-shadow: 2px 2px 0 #000;">Choose Perk</h3>
-                    <div class="item-list perk-list">
+                    <h3 class="section-title">Choose Perk</h3>
+                    <div class="item-list">
                         <?php foreach($my_perks as $s): ?>
                             <label class="item-card perk-card">
                                 <input type="radio" name="str" value="<?= $s['id'] ?>" required>
-                                <p style="color:var(--sketch-blue);"><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
+                                <p><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <button type="submit">LOCK IN</button>
+                    <button type="submit" class="lock-in-btn">LOCK IN</button>
                 </form>
             <?php else: ?>
                 <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponents...</p></div>
