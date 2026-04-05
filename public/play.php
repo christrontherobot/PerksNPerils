@@ -10,6 +10,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $user = htmlspecialchars($_POST['username']);
     if ($_POST['action'] === 'create') {
         $code = strtoupper(substr(md5(time()), 0, 6));
+        // We still pick a situation here, but we won't DISPLAY it yet
         $sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
         $stmt = $pdo->prepare("INSERT INTO lobbies (join_code, status, current_situation_id) VALUES (?, 'waiting', ?) RETURNING id");
         $stmt->execute([$code, $sit]);
@@ -34,9 +35,8 @@ $game = $lobby_id ? $pdo->query("SELECT * FROM lobbies WHERE id = $lobby_id")->f
 $me = $player_id ? $pdo->query("SELECT * FROM players WHERE id = $player_id")->fetch(PDO::FETCH_ASSOC) : null;
 $all_players = $lobby_id ? $pdo->query("SELECT * FROM players WHERE lobby_id = $lobby_id ORDER BY id ASC")->fetchAll() : [];
 $is_host = ($all_players && $all_players[0]['id'] == $player_id);
-$situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT description FROM situations WHERE id = ".(int)$game['current_situation_id'])->fetchColumn() : "Waiting...";
+$situation_text = ($game && $game['current_situation_id']) ? $pdo->query("SELECT description FROM situations WHERE id = ".(int)$game['current_situation_id'])->fetchColumn() : "";
 
-// Fetch actual card details based on the IDs stored in the player's draft columns
 $my_heroes = [];
 $my_perks = [];
 if ($me && $me['draft_heroes'] && $me['draft_perks']) {
@@ -80,17 +80,32 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
             <a href="actions.php?do=leave" class="button" style="margin-left:auto; background:var(--poke-red); text-decoration:none;">LEAVE</a>
         </nav>
 
-        <div class="badge">
-            <strong>SITUATION:</strong><br><?= htmlspecialchars($situation_text) ?>
-        </div>
+        <?php if ($game['status'] !== 'waiting'): ?>
+            <div class="badge">
+                <strong>SITUATION:</strong><br><?= htmlspecialchars($situation_text) ?>
+            </div>
+        <?php endif; ?>
 
         <?php if ($game['status'] === 'waiting'): ?>
             <div class="card-editor">
-                <h3>Lobby (<?= count($all_players) ?>/6)</h3>
-                <?php if ($is_host && count($all_players) >= 2): ?>
-                    <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">START GAME</a>
+                <h2 style="color:var(--poke-blue); margin-bottom:10px;">LOBBY READY</h2>
+                <h3>Players (<?= count($all_players) ?>/6)</h3>
+                <div style="margin: 20px 0; text-align: left;">
+                    <?php foreach($all_players as $p): ?>
+                        <div class="leaderboard-item" style="border-left: 5px solid var(--poke-red);">
+                            <?= htmlspecialchars($p['username']) ?> 
+                            <?= ($p['id'] == $all_players[0]['id']) ? '⭐' : '' ?>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <?php if ($is_host): ?>
+                    <?php if(count($all_players) >= 2): ?>
+                        <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">START GAME</a>
+                    <?php else: ?>
+                        <p style="font-size:0.8rem; color:#666;">Need at least 2 players to start...</p>
+                    <?php endif; ?>
                 <?php else: ?>
-                    <p>Waiting for host...</p>
+                    <p class="badge" style="animation: none; box-shadow: none;">Waiting for host to start...</p>
                 <?php endif; ?>
             </div>
 
@@ -102,12 +117,12 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                         <?php foreach($my_heroes as $c): ?>
                             <label class="item-card">
                                 <input type="radio" name="char" value="<?= $c['id'] ?>" required>
-                                <?php if($c['image_url']): ?><img src="<?= htmlspecialchars($c['image_url']) ?>"><?php endif; ?>
+                                <?php if(!empty($c['image_url'])): ?><img src="<?= htmlspecialchars($c['image_url']) ?>"><?php endif; ?>
                                 <strong><?= htmlspecialchars($c['description']) ?></strong>
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <h3 style="margin-top:20px;">Choose Perk</h3>
+                    <h3 style="margin-top:30px;">Choose Perk</h3>
                     <div class="item-list">
                         <?php foreach($my_perks as $s): ?>
                             <label class="item-card">
@@ -116,7 +131,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <button type="submit" style="margin-top:20px;">LOCK IN</button>
+                    <button type="submit" style="margin-top:30px;">LOCK IN</button>
                 </form>
             <?php else: ?>
                 <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponents...</p></div>
@@ -130,12 +145,14 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                 foreach($stmt->fetchAll() as $p): ?>
                     <div class="item-card">
                         <strong><?= htmlspecialchars($p['username']) ?></strong>
-                        <?php if($p['c_img']): ?><img src="<?= htmlspecialchars($p['c_img']) ?>"><?php endif; ?>
+                        <?php if(!empty($p['c_img'])): ?><img src="<?= htmlspecialchars($p['c_img']) ?>"><?php endif; ?>
                         <p>Hero: <?= htmlspecialchars($p['c_d']) ?></p>
                         <p style="color:green;">Perk: <?= htmlspecialchars($p['s_d']) ?></p>
                         <p style="color:var(--poke-red);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
-                        <?php if (!$me['voted_for_id']): ?>
-                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center;">VOTE</a>
+                        <?php if (!$me['voted_for_id'] && $p['id'] != $player_id): ?>
+                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center; margin-top:10px;">VOTE</a>
+                        <?php elseif ($p['id'] == $player_id): ?>
+                            <p style="font-size:0.7rem; color:#888; text-align:center;">(Your Card)</p>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
