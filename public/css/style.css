@@ -22,7 +22,7 @@ body {
     overflow-x: hidden;
 }
 
-/* Corner Card Graphics - RESTORED DESKTOP STYLING */
+/* Corner Card Graphics - DESKTOP (STAYS AS IS) */
 .chaos-cards {
     position: fixed;
     z-index: 0;
@@ -239,49 +239,46 @@ button, .button, .leave-btn {
     font-size: 1.4rem;
 }
 
-/* MOBILE OVERRIDES */
+/* MOBILE OVERRIDES (Mockup Specific) */
 @media screen and (max-width: 768px) {
-    :root {
-        --font-main: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive, sans-serif;
-    }
-
     body {
+        /* Mobile gradient fix */
         background-image: linear-gradient(to right, var(--sketch-red) 50%, var(--sketch-blue) 50%);
         background-attachment: scroll;
     }
 
-    /* MOBILE: Overlap behind logo */
+    /* Target container to allow absolute card positioning relative to logo */
+    .game-container {
+        position: relative;
+        padding: 20px;
+        box-sizing: border-box;
+    }
+
+    /* Cards fan out from behind the logo */
     .chaos-cards {
-        position: absolute; /* Allows them to scroll with content and stay behind logo */
+        position: absolute;
+        z-index: 1; /* Behind logo (z-index 2) but above body */
     }
 
     .p-blue-corner {
-        top: -30px;
-        left: -50px;
-        width: 280px;
+        top: 10px;
+        left: -40px;
+        width: 260px;
         transform: rotate(-15deg);
-        z-index: -1;
     }
 
     .p-red-corner {
-        top: -20px;
-        right: -60px;
-        width: 280px;
+        top: 20px;
+        right: -50px;
+        width: 260px;
         transform: rotate(15deg);
-        z-index: -1;
     }
 
     .logo-big {
-        max-width: 85%;
-        margin-top: 20px;
         position: relative;
         z-index: 2;
-    }
-
-    .game-container {
-        padding: 20px;
-        box-sizing: border-box;
-        width: 100%;
+        max-width: 80%;
+        margin-top: 30px;
     }
 
     .card-editor, .item-card, .badge {
