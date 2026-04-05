@@ -16,17 +16,14 @@ if ($do === 'start') {
     $stmt = $pdo->prepare("UPDATE lobbies SET status = 'picking', current_situation_id = ? WHERE id = ?");
     $stmt->execute([$new_sit, $lid]);
     
-    // Get all players in this lobby
     $players = $pdo->prepare("SELECT id FROM players WHERE lobby_id = ?");
     $players->execute([$lid]);
     $all_p = $players->fetchAll();
 
     foreach($all_p as $p) {
-        // Roll 3 random Heroes and 3 random Perks for EACH player
         $hero_ids = $pdo->query("SELECT id FROM characters ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_COLUMN);
         $perk_ids = $pdo->query("SELECT id FROM strengths ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_COLUMN);
         
-        // Store them as comma-separated strings in the database
         $stmt = $pdo->prepare("UPDATE players SET 
             has_submitted = false, 
             char_id = null, 
@@ -68,10 +65,21 @@ if ($do === 'submit') {
 
 if ($do === 'vote') {
     $target_id = (int)$_GET['target'];
-    $stmt = $pdo->prepare("UPDATE players SET voted_for_id = ? WHERE id = ?");
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM players WHERE lobby_id = ?");
+    $stmt->execute([$lid]);
+    $playerCount = $stmt->fetchColumn();
+
+    // Only allow self-voting if exactly 2 players are in the lobby
+    if ($playerCount > 2 && $target_id == $pid) {
+        header("Location: play.php?error=noselfvote");
+        exit;
+    }
+
+    $stmt = $pdo->prepare("UPDATE players SET voted_for_id = ? WHERE id = ? AND voted_for_id IS NULL");
     $stmt->execute([$target_id, $pid]);
 
-    $totalInLobby = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid")->fetchColumn();
+    $totalInLobby = $playerCount;
     $voteCount = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid AND voted_for_id IS NOT NULL")->fetchColumn();
     
     if ($voteCount >= $totalInLobby && $totalInLobby >= 2) {

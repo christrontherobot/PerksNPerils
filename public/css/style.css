@@ -21,14 +21,12 @@ body {
     overflow-x: hidden;
 }
 
-/* Background Card Graphics */
 .chaos-cards {
     position: fixed;
     z-index: 0;
     pointer-events: none;
 }
 
-/* FIXED: Smaller red card */
 .p-red-corner {
     top: 0;
     left: 10%;
@@ -41,13 +39,15 @@ body {
     width: 450px;
 }
 
-/* Main Layout */
 .game-container {
     position: relative;
     z-index: 10;
     width: 100%;
     max-width: 1000px;
     padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .logo-big {
@@ -64,7 +64,6 @@ body {
     50% { transform: translateY(-15px) rotate(1deg); }
 }
 
-/* Card System */
 .item-list { 
     display: flex;
     flex-wrap: wrap;
@@ -94,7 +93,6 @@ body {
     margin-bottom: 10px;
 }
 
-/* FIXED: Perk card visibility */
 .perk-card {
     background: var(--sketch-yellow);
     min-height: 100px;
@@ -111,7 +109,6 @@ body {
     outline: 5px solid var(--sketch-red);
 }
 
-/* UI Elements */
 .section-title {
     color: white;
     text-shadow: 3px 3px 0 var(--sketch-ink);
@@ -127,6 +124,7 @@ body {
     max-width: 600px;
     font-size: 1.5rem;
     box-shadow: 10px 10px 0 var(--sketch-ink);
+    text-align: center;
 }
 
 .card-editor { 
@@ -136,8 +134,19 @@ body {
     box-shadow: 15px 15px 0 var(--sketch-ink);
     border-radius: 5px 25px 8px 35px/25px 8px 45px 8px;
     text-align: center;
+    width: 100%;
     max-width: 450px;
     margin: 0 auto 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centers children horizontally */
+}
+
+.auth-form {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 nav { 
@@ -171,12 +180,31 @@ button, .button {
     box-shadow: 6px 6px 0 var(--sketch-ink);
     cursor: pointer;
     width: 100%;
+    max-width: 300px;
+    margin: 10px 0;
+    display: block;
+    text-align: center;
+    color: var(--sketch-ink);
 }
 
 input[type="text"] {
-    width: 100%;
+    width: 90%;
+    max-width: 300px;
     padding: 15px;
     margin: 10px 0;
     border: 3px solid var(--sketch-ink);
     font-family: var(--font-main);
+    text-align: center;
+}
+
+.leaderboard-item {
+    width: 100%;
+    max-width: 350px;
+    background: white;
+    border: 3px solid var(--sketch-ink);
+    padding: 10px;
+    margin: 5px auto;
+    display: flex;
+    justify-content: space-between;
+    box-sizing: border-box;
 }
