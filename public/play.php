@@ -81,8 +81,8 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
     <?php else: ?>
         
         <?php if ($game['status'] === 'waiting'): ?>
-            <div class="lobby-nav-header">
-                <strong>CODE: <?= htmlspecialchars($game['join_code']) ?></strong>
+            <div style="width:100%; max-width:450px; display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:10px;">
+                <strong class="lobby-code-display">CODE: <?= htmlspecialchars($game['join_code']) ?></strong>
                 <a href="actions.php?do=leave" class="leave-btn">LEAVE</a>
             </div>
             
@@ -116,14 +116,14 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 
         <?php elseif ($game['status'] === 'picking'): ?>
             <nav>
-                <strong style="color:white; text-shadow: 2px 2px 0 #000;">Lobby: <?= htmlspecialchars($game['join_code']) ?></strong>
+                <strong class="lobby-code-display">CODE: <?= htmlspecialchars($game['join_code']) ?></strong>
                 <a href="actions.php?do=leave" class="leave-btn">LEAVE</a>
             </nav>
             <div class="badge"><strong>SITUATION:</strong><br><?= htmlspecialchars($situation_text) ?></div>
 
             <?php if (!$me['has_submitted']): ?>
                 <form action="actions.php?do=submit" method="POST" style="width:100%; display:flex; flex-direction:column; align-items:center;">
-                    <h2 style="color:white;">Pick Your Hero</h2>
+                    <h2 class="section-header">PICK YOUR CHARACTER</h2>
                     <div class="item-list">
                         <?php foreach($my_heroes as $c): ?>
                             <label class="item-card">
@@ -133,7 +133,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <h2 style="color:white;">Pick Your Perk</h2>
+                    <h2 class="section-header">PICK YOUR PERK</h2>
                     <div class="item-list">
                         <?php foreach($my_perks as $s): ?>
                             <label class="item-card perk-card">
@@ -150,7 +150,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 
         <?php elseif ($game['status'] === 'voting'): ?>
             <nav>
-                <strong style="color:white; text-shadow: 2px 2px 0 #000;">Lobby: <?= htmlspecialchars($game['join_code']) ?></strong>
+                <strong class="lobby-code-display">CODE: <?= htmlspecialchars($game['join_code']) ?></strong>
                 <a href="actions.php?do=leave" class="leave-btn">LEAVE</a>
             </nav>
             <div class="badge"><strong>SITUATION:</strong><br><?= htmlspecialchars($situation_text) ?></div>
@@ -164,18 +164,34 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 
                 foreach($players as $p): ?>
                     <div class="item-card vote-card">
-                        <strong><?= htmlspecialchars($p['username']) ?></strong>
-                        <?php if(!empty($p['c_img'])): ?><img src="<?= htmlspecialchars($p['c_img']) ?>" style="height:180px; object-fit:cover; border:2px solid black;"><?php endif; ?>
-                        <div style="text-align:left; font-size:1rem; flex-grow:1; margin-top:10px;">
-                            <p><strong>Hero:</strong> <?= htmlspecialchars($p['c_d']) ?></p>
-                            <p style="color:green;"><strong>Perk:</strong> <?= htmlspecialchars($p['s_d']) ?></p>
-                            <p style="color:var(--sketch-red);"><strong>Peril:</strong> <?= htmlspecialchars($p['w_d']) ?></p>
+                        <strong style="font-size: 1.8rem; border-bottom: 3px solid black; width: 100%; margin-bottom: 10px;">
+                            <?= htmlspecialchars($p['username']) ?>
+                        </strong>
+                        
+                        <?php if(!empty($p['c_img'])): ?>
+                            <img src="<?= htmlspecialchars($p['c_img']) ?>" style="height:180px; width: 100%; object-fit:cover; border:2px solid black; margin-bottom:15px;">
+                        <?php endif; ?>
+
+                        <div class="vote-info-block">
+                            <span class="vote-label">HERO</span>
+                            <span class="vote-value"><?= htmlspecialchars($p['c_d']) ?></span>
                         </div>
+
+                        <div class="vote-info-block" style="color:green;">
+                            <span class="vote-label">PERK</span>
+                            <span class="vote-value"><?= htmlspecialchars($p['s_d']) ?></span>
+                        </div>
+
+                        <div class="vote-info-block" style="color:var(--sketch-red);">
+                            <span class="vote-label">PERIL</span>
+                            <span class="vote-value"><?= htmlspecialchars($p['w_d']) ?></span>
+                        </div>
+
                         <?php if (!$me['voted_for_id']): ?>
                             <?php if ($p['id'] != $player_id || $pCount == 2): ?>
                                 <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button vote-btn">VOTE</a>
                             <?php else: ?>
-                                <p style="font-size:0.8rem; opacity:0.6;">(Your Card)</p>
+                                <p style="font-size:0.9rem; opacity:0.6;">(Your Card)</p>
                             <?php endif; ?>
                         <?php endif; ?>
                     </div>
