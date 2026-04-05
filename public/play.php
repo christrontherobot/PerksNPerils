@@ -12,12 +12,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
         $code = strtoupper(substr(md5(time()), 0, 6));
         $sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
         $stmt = $pdo->prepare("INSERT INTO lobbies (join_code, status, current_situation_id) VALUES (?, 'waiting', ?) RETURNING id");
-        $stmt->execute([$code, $sit]);
+        $stmt->execute([code, sit]);
         $lobby_id = $stmt->fetchColumn();
     } else {
         $code = strtoupper($_POST['join_code']);
         $stmt = $pdo->prepare("SELECT id FROM lobbies WHERE join_code = ?");
-        $stmt->execute([$code]);
+        $stmt->execute([code]);
         $lobby_id = $stmt->fetchColumn();
     }
     
@@ -140,9 +140,9 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                         <?php endforeach; ?>
                     </div>
                     <h3 style="margin-top:30px; color:white; text-shadow: 2px 2px 0 #000;">Choose Perk</h3>
-                    <div class="item-list">
+                    <div class="item-list perk-list">
                         <?php foreach($my_perks as $s): ?>
-                            <label class="item-card">
+                            <label class="item-card perk-card">
                                 <input type="radio" name="str" value="<?= $s['id'] ?>" required>
                                 <p style="color:var(--sketch-blue);"><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
                             </label>

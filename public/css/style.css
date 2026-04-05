@@ -1,11 +1,14 @@
-/* Perks n' Perils: Hands of Chaos Full Theme */
+/* public/css/style.css - Perks n' Perils: Hands of Chaos Theme */
 :root {
     --sketch-red: #e67e7e;
     --sketch-blue: #a8d5e2;
     --sketch-yellow: #fdf2a7;
     --sketch-ink: #2c2c2c;
     --card-white: #ffffff;
+    /* Updated for the professor oak message box color */
+    --badge-cream: #fdf5e6; 
     --font-main: 'Marker Felt', 'Comic Sans MS', cursive;
+    --border-thick: 4px solid var(--sketch-ink);
 }
 
 body { 
@@ -19,6 +22,107 @@ body {
     flex-direction: column;
     align-items: center;
     overflow-x: hidden;
+    line-height: 1.4;
+}
+
+/* LOBBY HEADER: High-Stakes Red Vs. Blue Header */
+nav { 
+    width: 100%;
+    background: transparent; 
+    padding: 20px; 
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center; /* Center the lobby text */
+    align-items: center;
+    position: relative; /* So children can be absolutely positioned if needed */
+}
+
+nav strong {
+    font-size: 2.5rem;
+    color: white;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: 900;
+    -webkit-text-stroke: 1.5px var(--sketch-ink);
+    text-shadow: 4px 4px 0 var(--sketch-ink);
+}
+
+/* LEAVE Button */
+.leave-btn {
+    color: var(--sketch-ink);
+    text-decoration: none;
+    font-weight: bold;
+    background: var(--sketch-yellow);
+    padding: 10px 20px;
+    border: 3px solid var(--sketch-ink);
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; /* Irregular hand-drawn look */
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0 var(--sketch-ink);
+    position: absolute; /* Place it in the nav independently */
+    right: 20px;
+}
+
+/* --- SITUATION BADGE: Professor Oak's Message Box --- */
+.badge {
+    background: var(--badge-cream);
+    border: var(--border-thick);
+    color: var(--sketch-ink);
+    padding: 25px;
+    border-radius: 8px;
+    font-size: 1.4rem;
+    font-weight: bold;
+    margin: 0 auto 30px;
+    max-width: 700px;
+    box-shadow: 10px 10px 0px rgba(0,0,0,0.3);
+    position: relative;
+    text-align: center;
+    clip-path: none; /* Resetting any clip path */
+}
+
+/* Blinking Arrow Animation for the "Dialogue Box" */
+.badge::after {
+    content: "▼";
+    position: absolute;
+    bottom: 10px;
+    right: 20px;
+    color: var(--sketch-red);
+    animation: blink_arrow 1s infinite;
+}
+
+@keyframes blink_arrow {
+    0%, 100% { opacity: 1; transform: translateY(0); }
+    50% { opacity: 0; transform: translateY(3px); }
+}
+
+/* --- THE FANNING RED CARDS (BACKGROUND) --- */
+.chaos-cards {
+    position: fixed;
+    z-index: -1; /* Keep them behind content */
+}
+
+/* Making the red cards smaller */
+.p-red-corner {
+    top: 20px;
+    left: 20px;
+    width: 250px; /* Reduced from original size */
+    animation: cornerFloatRed 6s ease-in-out infinite;
+}
+
+.p-blue-corner {
+    bottom: 20px;
+    right: 20px;
+    width: 400px;
+    animation: cornerFloatBlue 6s ease-in-out infinite;
+}
+
+@keyframes cornerFloatRed {
+    0%, 100% { transform: rotate(-3deg) translate(0,0); }
+    50% { transform: rotate(-5deg) translate(-10px, 5px); }
+}
+@keyframes cornerFloatBlue {
+    0%, 100% { transform: rotate(3deg) translate(0,0); }
+    50% { transform: rotate(1deg) translate(10px, -5px); }
 }
 
 /* Logo Animation */
@@ -44,9 +148,16 @@ body {
     box-shadow: 15px 15px 0 var(--sketch-ink);
     border-radius: 5px 25px 8px 35px/25px 8px 45px 8px;
     text-align: center;
-    max-width: 450px;
-    margin-bottom: 50px;
+    max-width: 500px;
+    margin: 0 auto 50px;
     animation: slideIn 0.5s ease-out;
+}
+
+/* Title colors within the editor */
+.card-editor h2, .card-editor h3 {
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 var(--sketch-ink);
+    font-weight: 900;
 }
 
 @keyframes slideIn {
@@ -54,28 +165,84 @@ body {
     to { opacity: 1; transform: translateY(0); }
 }
 
-/* Navigation & Leave Button */
-nav { 
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+/* --- CARD SYSTEM: Character and Perk draft display --- */
+.item-list { 
+    display: grid; 
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px; 
     padding: 20px;
-    box-sizing: border-box;
 }
 
-nav a {
+/* THE CARDS: Physical 3D Feel with hand-drawn wobble */
+.item-card { 
+    background: var(--card-cream);
+    padding: 18px;
+    border: 3px solid #333;
+    border-radius: 12px; 
+    position: relative; 
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.3);
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Snappy party animation */
+    display: flex;
+    flex-direction: column;
+    cursor: pointer;
+}
+
+/* Playful card tilt on hover */
+.item-card:hover {
+    transform: rotate(-1deg) translateY(-8px);
+    z-index: 10;
+}
+
+/* Card image (The artist-style heroes) */
+.item-card img { 
+    width: 100%; 
+    border: var(--border-thick);
+    border-radius: 4px; 
+    margin-bottom: 12px; 
+    aspect-ratio: 1/1; 
+    object-fit: cover; 
+    background: white;
+}
+
+.item-card strong {
     color: var(--sketch-ink);
-    text-decoration: none;
-    font-weight: 900;
-    background: var(--sketch-yellow);
-    padding: 10px 20px;
-    border: 3px solid var(--sketch-ink);
-    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; 
-    box-shadow: 4px 4px 0 var(--sketch-ink);
+    font-size: 1.2rem;
+    display: block;
+    margin-bottom: 8px;
+    text-align: center;
 }
 
-/* Interaction Styles */
+.item-card p {
+    margin: 6px 0;
+    font-size: 1rem;
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Hiding the standard radio buttons but keeping them functional */
+.item-card input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+
+/* Style for the selected card */
+.item-card input[type="radio"]:checked + strong {
+    color: var(--sketch-red);
+    text-shadow: none;
+}
+.item-card input[type="radio"]:checked + img {
+    border-color: var(--sketch-red);
+    box-shadow: 0 0 15px var(--sketch-red);
+}
+.item-card input[type="radio"]:checked ~ p {
+    color: var(--sketch-red) !important;
+}
+
+/* Perk Colors (Must match php style definitions) */
+p[style*="green"] { color: #228b22; } /* Perk Green */
+p[style*="poke-red"] { color: var(--sketch-red); } /* Peril Red */
+
+/* Interaction Styles: General Buttons */
 button, .button { 
     background: var(--sketch-yellow);
     border: 4px solid var(--sketch-ink);
@@ -103,4 +270,18 @@ input[type="text"] {
     font-family: var(--font-main);
     font-size: 1.1rem;
     box-sizing: border-box;
+}
+
+/* LEADERBOARD ITEM: The Professor Oak Scoreboard */
+.leaderboard-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-left: 12px solid var(--sketch-yellow);
+    margin-bottom: 10px;
+    padding: 15px;
+    font-weight: 900;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 3px solid #000;
+    box-shadow: 5px 5px 0px rgba(0,0,0,0.3);
 }
