@@ -10,7 +10,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['action'])) {
     $user = htmlspecialchars($_POST['username']);
     if ($_POST['action'] === 'create') {
         $code = strtoupper(substr(md5(time()), 0, 6));
-        // We still pick a situation here, but we won't DISPLAY it yet
         $sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
         $stmt = $pdo->prepare("INSERT INTO lobbies (join_code, status, current_situation_id) VALUES (?, 'waiting', ?) RETURNING id");
         $stmt->execute([$code, $sit]);
@@ -60,24 +59,42 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
             } catch (e) {}
         }
         setInterval(sync, 2000);
+
+        // Music Trigger: Browsers block auto-play until a click happens
+        function startMusic() {
+            const audio = document.getElementById('bgm');
+            if (audio && audio.paused) {
+                audio.play().catch(e => console.log("Audio play blocked until interaction."));
+            }
+        }
     </script>
 </head>
-<body>
+<body onclick="startMusic()">
+
+<audio id="bgm" loop>
+    <source src="audio/chaos_theme.mp3" type="audio/mpeg">
+</audio>
+
+<img src="img/red_hand.png" class="chaos-cards p-red-corner" alt="">
+<img src="img/blue_hand.png" class="chaos-cards p-blue-corner" alt="">
+
 <div class="game-container">
     <?php if (!$lobby_id || !$me): ?>
+        <img src="img/logo.png" alt="Perks n' Perils" class="logo-big">
+        
         <div class="card-editor">
-            <h2>Perks n' Perils</h2>
+            <h2>Hands of Chaos</h2>
             <form method="POST">
-                <input type="text" name="username" placeholder="Name" required>
-                <input type="text" name="join_code" placeholder="Join Code">
-                <button type="submit" name="action" value="create">Host Game</button>
+                <input type="text" name="username" placeholder="Nickname" required>
+                <input type="text" name="join_code" placeholder="Join Code (Optional)">
+                <button type="submit" name="action" value="create" style="background:var(--sketch-red); color:white;">Host Game</button>
                 <button type="submit" name="action" value="join">Join Game</button>
             </form>
         </div>
     <?php else: ?>
         <nav>
             <strong>Lobby: <?= htmlspecialchars($game['join_code'] ?? '') ?></strong>
-            <a href="actions.php?do=leave" class="button" style="margin-left:auto; background:var(--poke-red); text-decoration:none;">LEAVE</a>
+            <a href="actions.php?do=leave" class="leave-btn">LEAVE</a>
         </nav>
 
         <?php if ($game['status'] !== 'waiting'): ?>
@@ -88,13 +105,13 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 
         <?php if ($game['status'] === 'waiting'): ?>
             <div class="card-editor">
-                <h2 style="color:var(--poke-blue); margin-bottom:10px;">LOBBY READY</h2>
+                <h2>LOBBY READY</h2>
                 <h3>Players (<?= count($all_players) ?>/6)</h3>
                 <div style="margin: 20px 0; text-align: left;">
                     <?php foreach($all_players as $p): ?>
-                        <div class="leaderboard-item" style="border-left: 5px solid var(--poke-red);">
-                            <?= htmlspecialchars($p['username']) ?> 
-                            <?= ($p['id'] == $all_players[0]['id']) ? '⭐' : '' ?>
+                        <div class="leaderboard-item">
+                            <span><?= htmlspecialchars($p['username']) ?></span>
+                            <span><?= ($p['id'] == $all_players[0]['id']) ? '⭐' : '' ?></span>
                         </div>
                     <?php endforeach; ?>
                 </div>
@@ -102,17 +119,17 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                     <?php if(count($all_players) >= 2): ?>
                         <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">START GAME</a>
                     <?php else: ?>
-                        <p style="font-size:0.8rem; color:#666;">Need at least 2 players to start...</p>
+                        <p>Need at least 2 players to start...</p>
                     <?php endif; ?>
                 <?php else: ?>
-                    <p class="badge" style="animation: none; box-shadow: none;">Waiting for host to start...</p>
+                    <div class="badge" style="clip-path: none; font-size: 1rem;">Waiting for host...</div>
                 <?php endif; ?>
             </div>
 
         <?php elseif ($game['status'] === 'picking'): ?>
             <?php if (!$me['has_submitted']): ?>
                 <form action="actions.php?do=submit" method="POST">
-                    <h3>Choose Hero</h3>
+                    <h3 style="color:white; text-shadow: 2px 2px 0 #000;">Choose Hero</h3>
                     <div class="item-list">
                         <?php foreach($my_heroes as $c): ?>
                             <label class="item-card">
@@ -122,16 +139,16 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <h3 style="margin-top:30px;">Choose Perk</h3>
+                    <h3 style="margin-top:30px; color:white; text-shadow: 2px 2px 0 #000;">Choose Perk</h3>
                     <div class="item-list">
                         <?php foreach($my_perks as $s): ?>
                             <label class="item-card">
                                 <input type="radio" name="str" value="<?= $s['id'] ?>" required>
-                                <p style="color:var(--poke-blue);"><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
+                                <p style="color:var(--sketch-blue);"><?= htmlspecialchars($s['description']) ?> (+<?= $s['points'] ?>)</p>
                             </label>
                         <?php endforeach; ?>
                     </div>
-                    <button type="submit" style="margin-top:30px;">LOCK IN</button>
+                    <button type="submit">LOCK IN</button>
                 </form>
             <?php else: ?>
                 <div class="card-editor"><h3>Locked In</h3><p>Waiting for opponents...</p></div>
@@ -148,11 +165,11 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
                         <?php if(!empty($p['c_img'])): ?><img src="<?= htmlspecialchars($p['c_img']) ?>"><?php endif; ?>
                         <p>Hero: <?= htmlspecialchars($p['c_d']) ?></p>
                         <p style="color:green;">Perk: <?= htmlspecialchars($p['s_d']) ?></p>
-                        <p style="color:var(--poke-red);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
+                        <p style="color:var(--sketch-red);">Peril: <?= htmlspecialchars($p['w_d']) ?></p>
                         <?php if (!$me['voted_for_id'] && $p['id'] != $player_id): ?>
-                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block; text-align:center; margin-top:10px;">VOTE</a>
+                            <a href="actions.php?do=vote&target=<?= $p['id'] ?>" class="button" style="text-decoration:none; display:block;">VOTE</a>
                         <?php elseif ($p['id'] == $player_id): ?>
-                            <p style="font-size:0.7rem; color:#888; text-align:center;">(Your Card)</p>
+                            <p style="font-size:0.8rem; opacity:0.6;">(Your Card)</p>
                         <?php endif; ?>
                     </div>
                 <?php endforeach; ?>
@@ -162,10 +179,13 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
             <div class="card-editor">
                 <h2>Leaderboard</h2>
                 <?php foreach($all_players as $r): ?>
-                    <div class="leaderboard-item"><span><?= htmlspecialchars($r['username']) ?></span><span><?= $r['score'] ?></span></div>
+                    <div class="leaderboard-item">
+                        <span><?= htmlspecialchars($r['username']) ?></span>
+                        <span><?= $r['score'] ?></span>
+                    </div>
                 <?php endforeach; ?>
                 <?php if ($is_host): ?>
-                    <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none; margin-top:20px;">NEXT ROUND</a>
+                    <a href="actions.php?do=start" class="button" style="display:block; text-decoration:none;">NEXT ROUND</a>
                 <?php endif; ?>
             </div>
         <?php endif; ?>
