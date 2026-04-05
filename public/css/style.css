@@ -227,3 +227,44 @@ button, .button, .leave-btn {
     padding: 10px 0;
     font-size: 1.4rem;
 }
+
+/* MOBILE OVERRIDES (Only applies to screens smaller than 768px) */
+@media screen and (max-width: 768px) {
+    :root {
+        /* Fallback to Comic Sans/cursive specifically for mobile */
+        --font-main: 'Comic Sans MS', 'Comic Sans', 'Chalkboard SE', cursive, sans-serif;
+    }
+
+    body {
+        /* Standardizing the gradient for mobile mobile browser compatibility */
+        background-image: linear-gradient(to right, var(--sketch-red) 50%, var(--sketch-blue) 50%);
+        background-attachment: scroll; /* Prevents gradient "jumping" on mobile scroll */
+    }
+
+    .game-container {
+        /* Adds space so the cards aren't touching the phone edges */
+        padding: 20px;
+        box-sizing: border-box;
+        width: 100%;
+    }
+
+    .card-editor, .item-card, .badge {
+        /* Ensures cards shrink slightly to fit within mobile padding */
+        max-width: calc(100vw - 40px);
+        box-sizing: border-box;
+    }
+
+    .section-header {
+        font-size: 2.2rem; /* Scaled down slightly for mobile screens */
+    }
+
+    .lobby-code-display {
+        font-size: 2rem !important; /* Prevents overflow on narrow phones */
+    }
+
+    /* Hide corner hands on small mobile if they overlap content too much */
+    .chaos-cards {
+        width: 150px; 
+        opacity: 0.5;
+    }
+}
