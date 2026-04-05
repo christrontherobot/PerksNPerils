@@ -1,165 +1,258 @@
-/* Perks n' Perils: Hands of Chaos Theme */
+/* =========================================================
+   PERKS N' PERILS - HANDS OF CHAOS Theme
+   - Full CSS File -
+========================================================= */
 
+/* --- CORE VARIABLES --- 
+   Colors and styles directly based on image_6.png
+*/
 :root {
-    /* Colors sampled from the sketch */
-    --sketch-red: #e67e7e;
-    --sketch-blue: #a8d5e2;
-    --sketch-yellow: #fdf2a7;
-    --sketch-ink: #2c2c2c;
+    /* Color Palette from sketch */
+    --sketch-red: #e67e7e;       /* The Perk side */
+    --sketch-blue: #a8d5e2;      /* The Peril side */
+    --sketch-yellow: #fdf2a7;    /* Primary Action/Button Highlight */
+    
+    /* Core Styling */
+    --sketch-ink: #2c2c2c;       /* Outline/Ink color */
     --card-white: #ffffff;
+    --border-thick: 4px solid var(--sketch-ink);
+    
+    /* Font Stack - Use a playful, marker-style font */
+    --font-stack: 'Marker Felt', 'Comic Sans MS', 'Chalkboard SE', cursive, sans-serif;
 }
 
+/* --- Base Body & Background ---
+   This creates the perfect diagonal split from image_6.png
+*/
 body { 
     background-color: var(--sketch-blue);
-    /* The core diagonal split from the reference image */
     background-image: linear-gradient(135deg, var(--sketch-red) 50%, var(--sketch-blue) 50%);
     color: var(--sketch-ink); 
-    font-family: 'Comic Sans MS', 'Chalkboard SE', 'Marker Felt', sans-serif; 
+    font-family: var(--font-stack); 
     margin: 0;
     min-height: 100vh;
     padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    line-height: 1.4;
+    overflow-x: hidden; /* Avoid messy rotation overflows */
 }
 
+/* Main content wrapper */
 .game-container {
     width: 100%;
     max-width: 1000px;
 }
 
-/* LOBBY HEADER: Hand-drawn style */
+/* --- Navigation & Lobby Header ---
+   Transparent background, centered text like image_6.png
+*/
 nav { 
     background: transparent;
     padding: 20px; 
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
     margin-bottom: 40px;
+    text-align: center;
 }
 
 nav strong {
-    font-size: 2.5rem;
+    font-size: 2.8rem;
     color: white;
-    /* Creating the "PERKS N PERILS" text effect from sketch */
-    text-shadow: 3px 3px 0 var(--sketch-ink);
+    /* Creating the "PERKS N PERILS" outline text effect */
+    text-shadow: 4px 4px 0 var(--sketch-ink);
     letter-spacing: -1px;
+    font-weight: 900;
 }
 
-/* LEAVE Button: Looks like a scribbled sticker */
+/* FIX: LEAVE BUTTON IS NOW YELLOW BLOCKED STYLE */
 nav a {
     color: var(--sketch-ink);
     text-decoration: none;
-    font-weight: bold;
-    background: var(--card-white);
-    padding: 8px 15px;
-    border: 3px solid var(--sketch-ink);
-    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; /* Irregular hand-drawn look */
+    font-weight: 900;
+    background: var(--sketch-yellow); /* Yellow background! */
+    padding: 10px 20px;
+    border: var(--border-thick);
+    /* Irregular hand-drawn look using a trick with borders */
+    border-radius: 255px 15px 225px 15px/15px 225px 15px 255px; 
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    box-shadow: 4px 4px 0 var(--sketch-ink); /* Solid ink shadow */
+    margin-left: 10px;
+    transition: transform 0.1s;
 }
 
-/* THE COLLISION HUB (Situation Badge) */
-/* This mimics the central 'N' explosion in the reference image */
+nav a:active {
+    transform: translate(3px, 3px);
+    box-shadow: 1px 1px 0 var(--sketch-ink);
+}
+
+/* --- The Collision Hub (Situation Badge) ---
+   Mimics the central 'N' explosion from image_6.png
+*/
 .badge {
     background: var(--sketch-yellow);
-    border: 4px solid var(--sketch-ink);
+    border: 5px solid var(--sketch-ink);
     color: var(--sketch-ink);
     padding: 30px;
     margin: 0 auto 40px auto;
     max-width: 600px;
     text-align: center;
-    font-size: 1.5rem;
-    box-shadow: 10px 10px 0 var(--sketch-ink);
-    /* Burst shape inspiration */
+    font-size: 1.6rem;
+    box-shadow: 12px 12px 0 var(--sketch-ink);
+    /* Create a burst/explosion shape inspiration */
     clip-path: polygon(0% 15%, 15% 15%, 15% 0%, 85% 0%, 85% 15%, 100% 15%, 100% 85%, 85% 85%, 85% 100%, 15% 100%, 15% 85%, 0% 85%);
 }
 
 .badge strong {
     display: block;
-    font-size: 1.8rem;
-    margin-bottom: 5px;
+    font-size: 2rem;
+    margin-bottom: 8px;
+    color: var(--sketch- ink);
 }
 
-/* GRID SYSTEM */
+/* --- Card Grid System --- 
+   Ensures the cards tilt automatically like image_6.png
+*/
 .item-list { 
     display: grid; 
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 40px; 
     padding: 20px;
 }
 
-/* THE CARDS: Stacked corner style like the sketch */
+/* --- The Cards ---
+   Physical paper look with automatic rotation
+*/
 .item-card { 
     background: var(--card-white);
     padding: 15px;
-    border: 4px solid var(--sketch-ink);
-    /* Messy paper cut-out look */
+    border: var(--border-thick);
+    /* Irregular paper cut-out look */
     border-radius: 2px 15px 5px 25px/15px 5px 35px 5px;
     box-shadow: 8px 8px 0 var(--sketch-ink);
-    transition: transform 0.2s;
+    transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     display: flex;
     flex-direction: column;
 }
 
-/* Mimics the card fans in the corners of the reference image */
-.item-card:nth-child(odd) { transform: rotate(-2deg); }
-.item-card:nth-child(even) { transform: rotate(2deg); }
+/* Mimics the messy card piles in image_6.png using auto-rotation */
+.item-card:nth-child(odd) { transform: rotate(-3deg); }
+.item-card:nth-child(even) { transform: rotate(3deg); }
 
+/* Hover effect: Card "Lift" and center */
 .item-card:hover {
-    transform: scale(1.05) rotate(0deg);
-    z-index: 5;
+    transform: scale(1.08) rotate(0deg);
+    z-index: 10;
 }
 
+/* Card images/heroes/situations */
 .item-card img { 
     width: 100%; 
     border: 3px solid var(--sketch-ink);
     border-radius: 8px;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    aspect-ratio: 1/1; 
+    object-fit: cover;
+    background: #f0f0f0;
 }
 
-/* BUTTONS: Large hand-drawn blocks */
+.item-card strong {
+    font-size: 1.3rem;
+    text-align: center;
+    color: var(--sketch- ink);
+}
+
+.item-card p {
+    text-align: center;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 6px 0;
+}
+
+/* --- General Buttons ---
+   Block Yellow, Hand-drawn and Bold
+*/
 .button, button { 
     background: var(--sketch-yellow);
     color: var(--sketch-ink); 
-    border: 4px solid var(--sketch-ink);
+    border: var(--border-thick);
     padding: 15px 30px; 
     cursor: pointer; 
     font-family: inherit;
     font-weight: 900;
     text-transform: uppercase;
-    font-size: 1.2rem;
+    font-size: 1.25rem;
+    letter-spacing: 1px;
     box-shadow: 6px 6px 0 var(--sketch-ink);
-    margin-top: 10px;
+    margin-top: 20px;
+    width: 100%; /* Default width */
+    transition: transform 0.1s;
 }
+
+/* Fix: The specific Host button (like creating a game) is red, as requested previously */
+button[value="create"] { 
+    background: var(--sketch-red); 
+    color: white; 
+}
+
+/* Red buttons get white text by default */
+button[style*="red"] { color: white; }
 
 button:active {
     transform: translate(4px, 4px);
     box-shadow: 2px 2px 0 var(--sketch-ink);
 }
 
-/* LOGIN / LOBBY BOX */
+/* --- Login / Lobby Box (Editor) ---
+   The central paper-cutout panel
+*/
 .card-editor { 
     background: var(--card-white); 
     padding: 40px; 
     border: 5px solid var(--sketch-ink);
     box-shadow: 15px 15px 0 var(--sketch-ink);
-    border-radius: 5px;
+    /* Irregular paper cut-out look */
+    border-radius: 5px 25px 8px 35px/25px 8px 45px 8px;
     text-align: center;
+    max-width: 450px;
+    margin: 80px auto;
 }
 
+/* Title colors within the editor */
+.card-editor h2, .card-editor h3 {
+    text-transform: uppercase;
+    text-shadow: 2px 2px 0 var(--sketch-ink);
+    font-weight: 900;
+    color: var(--sketch-blue);
+}
+
+/* Inputs are messy white on gray paper */
 input[type="text"] { 
     background: #f0f0f0;
     border: 3px solid var(--sketch-ink);
     padding: 15px;
-    width: 80%;
-    font-size: 1.2rem;
+    width: 90%;
+    margin: 10px 0;
+    font-size: 1.25rem;
     font-family: inherit;
+    color: var(--sketch- ink);
 }
 
-/* LEADERBOARD Score lines */
+input[type="text"]:focus {
+    outline: none;
+    background: var(--card-white);
+    border-color: var(--sketch-red);
+}
+
+/* Leaderboard Rows */
 .leaderboard-item {
     border-bottom: 4px dashed var(--sketch-ink);
-    padding: 10px;
-    font-size: 1.4rem;
+    padding: 15px;
+    font-size: 1.5rem;
     display: flex;
     justify-content: space-between;
+    font-weight: 900;
 }
