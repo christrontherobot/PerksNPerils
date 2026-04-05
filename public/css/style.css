@@ -9,7 +9,6 @@
 }
 
 body { 
-    /* Vertical split gradient: Red on Left, Blue on Right */
     background-color: var(--sketch-blue);
     background-image: linear-gradient(90deg, var(--sketch-red) 50%, var(--sketch-blue) 50%);
     color: var(--sketch-ink); 
@@ -22,22 +21,21 @@ body {
     overflow-x: hidden;
 }
 
-/* Corner Card Graphics */
 .chaos-cards {
     position: fixed;
     z-index: 0;
     pointer-events: none;
 }
 
-/* Moved Blue to Top Left, Red to Top Right - Both Same Size */
+/* Corner Graphics with Margins */
 .p-blue-corner { 
-    top: -20px; 
-    left: -20px; 
+    top: 20px; 
+    left: 20px; 
     width: 300px; 
 }
 .p-red-corner { 
-    top: -20px; 
-    right: -20px; 
+    top: 20px; 
+    right: 20px; 
     width: 300px; 
 }
 
@@ -66,23 +64,38 @@ body {
     50% { transform: translateY(-10px) rotate(1deg); }
 }
 
-/* Navigation & Lobby Code */
-nav {
+/* Lobby Navigation Header */
+.lobby-nav-header {
     width: 100%;
+    max-width: 450px;
     display: flex;
     justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    margin-bottom: 20px;
+    align-items: flex-end;
+    margin-bottom: 10px;
 }
 
-nav strong {
-    font-size: 2.5rem; /* Larger Lobby Code */
+.lobby-nav-header strong {
+    font-size: 2.2rem;
     color: white;
     text-shadow: 3px 3px 0 #000;
 }
 
-/* Card Selection Layout */
+/* Big Comic Inputs */
+input[type="text"] {
+    width: 90%;
+    max-width: 350px;
+    padding: 15px;
+    margin: 15px 0;
+    border: 4px solid var(--sketch-ink);
+    font-family: var(--font-main);
+    font-size: 1.6rem;
+    font-weight: 900;
+    text-align: center;
+    box-shadow: 6px 6px 0 var(--sketch-ink);
+    background: white;
+}
+
+/* Card Selection */
 .item-list { 
     display: flex;
     flex-wrap: wrap;
@@ -98,22 +111,16 @@ nav strong {
     padding: 15px;
     width: 280px; 
     min-height: 320px;
-    cursor: pointer;
     box-shadow: 8px 8px 0 var(--sketch-ink);
-    transition: 0.2s;
     text-align: center;
     display: flex;
     flex-direction: column;
-    font-size: 1.4rem; /* Larger text for cards */
+    font-size: 1.4rem;
 }
 
-.item-card:hover { transform: scale(1.02); }
-
-/* Smaller Perks on choosing screen */
 .perk-card {
-    background: white !important;
-    width: 220px; /* Smaller width */
-    min-height: 120px; /* Smaller height */
+    width: 220px;
+    min-height: 140px;
     justify-content: center;
 }
 
@@ -125,30 +132,13 @@ nav strong {
     margin-bottom: 10px;
 }
 
-/* Voting Screen */
+/* Voting & Result Cards */
 .vote-card {
     width: 320px; 
     height: 520px; 
     padding: 20px;
-    display: flex;
-    flex-direction: column;
-    font-size: 1.3rem;
 }
 
-.card-thumb {
-    width: 100%;
-    height: 240px !important;
-    object-fit: cover;
-    border: 2px solid var(--sketch-ink);
-}
-
-.card-details {
-    text-align: left;
-    margin-top: 10px;
-    flex-grow: 1;
-}
-
-/* Centered Vote Button */
 .vote-btn {
     margin: 15px auto !important; 
     width: 90% !important;
@@ -156,27 +146,6 @@ nav strong {
 }
 
 /* UI Elements */
-.center-form {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-}
-
-.card-editor { 
-    background: var(--card-white); 
-    padding: 40px; 
-    border: 5px solid var(--sketch-ink);
-    box-shadow: 15px 15px 0 var(--sketch-ink);
-    border-radius: 5px 25px 8px 35px/25px 8px 45px 8px;
-    text-align: center;
-    width: 100%;
-    max-width: 450px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-}
-
 button, .button, .leave-btn { 
     background: var(--sketch-yellow);
     border: 4px solid var(--sketch-ink);
@@ -195,13 +164,26 @@ button, .button, .leave-btn {
     color: var(--sketch-ink);
 }
 
-/* Larger Leave Button */
 .leave-btn {
     width: auto;
     margin: 0;
-    padding: 15px 30px;
-    font-size: 1.3rem;
-    box-shadow: 6px 6px 0 var(--sketch-ink);
+    padding: 12px 24px;
+    font-size: 1.2rem;
+    box-shadow: 5px 5px 0 var(--sketch-ink);
+}
+
+.card-editor { 
+    background: var(--card-white); 
+    padding: 40px; 
+    border: 5px solid var(--sketch-ink);
+    box-shadow: 15px 15px 0 var(--sketch-ink);
+    border-radius: 5px 25px 8px 35px/25px 8px 45px 8px;
+    text-align: center;
+    width: 100%;
+    max-width: 450px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .badge {
@@ -213,4 +195,12 @@ button, .button, .leave-btn {
     font-size: 1.8rem;
     box-shadow: 10px 10px 0 var(--sketch-ink);
     text-align: center;
+}
+
+.leaderboard-item {
+    display: flex; 
+    justify-content: space-between; 
+    border-bottom: 3px dashed var(--sketch-ink); 
+    padding: 10px 0;
+    font-size: 1.2rem;
 }
