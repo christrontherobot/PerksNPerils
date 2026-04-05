@@ -12,18 +12,32 @@ if (!$pid || !$lid) {
 }
 
 if ($do === 'start') {
-    // 1. Pick a new situation for the lobby
     $new_sit = $pdo->query("SELECT id FROM situations ORDER BY RANDOM() LIMIT 1")->fetchColumn();
     $stmt = $pdo->prepare("UPDATE lobbies SET status = 'picking', current_situation_id = ? WHERE id = ?");
     $stmt->execute([$new_sit, $lid]);
     
-    // 2. Reset round-specific data for ALL players in the database
-    $pdo->prepare("UPDATE players SET has_submitted = false, char_id = null, strength_id = null, weakness_id = null, voted_for_id = null WHERE lobby_id = ?")
-        ->execute([$lid]);
-    
-    // 3. CRITICAL: Clear the local session hand so play.php generates a NEW one for this round
-    unset($_SESSION['my_hero_options']);
-    unset($_SESSION['my_perk_options']);
+    // Get all players in this lobby
+    $players = $pdo->prepare("SELECT id FROM players WHERE lobby_id = ?");
+    $players->execute([$lid]);
+    $all_p = $players->fetchAll();
+
+    foreach($all_p as $p) {
+        // Roll 3 random Heroes and 3 random Perks for EACH player
+        $hero_ids = $pdo->query("SELECT id FROM characters ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_COLUMN);
+        $perk_ids = $pdo->query("SELECT id FROM strengths ORDER BY RANDOM() LIMIT 3")->fetchAll(PDO::FETCH_COLUMN);
+        
+        // Store them as comma-separated strings in the database
+        $stmt = $pdo->prepare("UPDATE players SET 
+            has_submitted = false, 
+            char_id = null, 
+            strength_id = null, 
+            weakness_id = null, 
+            voted_for_id = null,
+            draft_heroes = ?,
+            draft_perks = ?
+            WHERE id = ?");
+        $stmt->execute([implode(',', $hero_ids), implode(',', $perk_ids), $p['id']]);
+    }
         
     header("Location: play.php");
     exit;
@@ -84,8 +98,6 @@ if ($do === 'vote') {
 
 if ($do === 'leave') {
     $pdo->prepare("DELETE FROM players WHERE id = ?")->execute([$pid]);
-    $remaining = $pdo->query("SELECT COUNT(*) FROM players WHERE lobby_id = $lid")->fetchColumn();
-    if ($remaining == 0) { $pdo->prepare("DELETE FROM lobbies WHERE id = ?")->execute([$lid]); }
     session_destroy();
     header("Location: play.php");
     exit;
