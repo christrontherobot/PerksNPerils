@@ -69,7 +69,8 @@ body {
     background: white;
     border: 4px solid var(--sketch-ink);
     padding: 15px;
-    width: 220px;
+    width: 280px; /* Increased width for better proportions */
+    min-height: 320px; /* Consistent height */
     cursor: pointer;
     box-shadow: 8px 8px 0 var(--sketch-ink);
     transition: 0.2s;
@@ -80,30 +81,33 @@ body {
 
 .item-card:hover { transform: scale(1.02); }
 
-/* FIXED: Perks now white instead of yellow */
 .perk-card {
     background: white !important;
-    min-height: 120px;
     justify-content: center;
 }
 
 .item-card img {
     width: 100%;
-    height: 180px;
+    height: 200px;
     object-fit: cover;
     border: 2px solid var(--sketch-ink);
     margin-bottom: 10px;
 }
 
-/* Voting Screen - Bigger/Smarter Cards */
+/* Voting Screen - Unified Large Size */
 .vote-card {
-    width: 320px; /* Wider */
-    min-height: 400px; /* Longer but closer to width */
+    width: 320px; 
+    height: 500px; /* Fixed height for consistency between red/blue cards */
     padding: 20px;
+    display: flex;
+    flex-direction: column;
 }
 
 .card-thumb {
-    height: 220px !important;
+    width: 100%;
+    height: 240px !important;
+    object-fit: cover;
+    border: 2px solid var(--sketch-ink);
 }
 
 .card-details {
@@ -147,7 +151,8 @@ body {
     align-items: center;
 }
 
-button, .button { 
+/* Updated to include leave-btn for consistent "comic" styling */
+button, .button, .leave-btn { 
     background: var(--sketch-yellow);
     border: 4px solid var(--sketch-ink);
     padding: 15px 25px;
@@ -163,6 +168,14 @@ button, .button {
     text-align: center;
     text-decoration: none;
     color: var(--sketch-ink);
+}
+
+.leave-btn {
+    width: auto;
+    margin: 0;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+    box-shadow: 4px 4px 0 var(--sketch-ink);
 }
 
 input[type="text"] {

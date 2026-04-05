@@ -104,7 +104,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
         </div>
     <?php else: ?>
         <nav>
-            <strong>Lobby: <?= htmlspecialchars($game['join_code'] ?? '') ?></strong>
+            <strong style="color:white; text-shadow: 2px 2px 0 #000;">Lobby: <?= htmlspecialchars($game['join_code'] ?? '') ?></strong>
             <a href="actions.php?do=leave" class="leave-btn">LEAVE</a>
         </nav>
 
