@@ -1,6 +1,5 @@
 <?php
 // public/play.php
-<link rel="icon" type="image/png" href="/img/favicon.png">
 
 session_start();
 require_once('../src/db.php');
@@ -48,6 +47,7 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Perks n' Perils</title>
