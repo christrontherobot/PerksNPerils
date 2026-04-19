@@ -17,10 +17,18 @@ $allowed_types = ['characters', 'strengths', 'weaknesses', 'situations'];
 
 if (in_array($type, $allowed_types) && is_numeric($id)) {
     try {
+        // ADDED LOGIC FOR SITUATIONS:
+        // This clears the reference in the lobbies table so the situation is free to be deleted.
+        if ($type === 'situations') {
+            $stmt = $pdo->prepare("UPDATE lobbies SET current_situation_id = NULL WHERE current_situation_id = ?");
+            $stmt->execute([$id]);
+        }
+
         $stmt = $pdo->prepare("DELETE FROM $type WHERE id = ?");
         $stmt->execute([$id]);
     } catch (PDOException $e) {
-        // Optional: Log error
+        // Temporary: uncomment this to see the exact error if it still fails
+        // die($e->getMessage()); 
     }
 }
 
