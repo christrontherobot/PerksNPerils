@@ -1,6 +1,5 @@
 <?php
 require_once('../../src/db.php');
-<link rel="icon" type="image/png" href="/img/favicon.png">
 
 session_start();
 if (!isset($_SESSION['authenticated'])) { header("Location: index.php"); exit; }
@@ -59,6 +58,7 @@ $items = $pdo->query("SELECT * FROM $current_type ORDER BY id DESC")->fetchAll(P
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Perks n' Perils | Editor</title>
