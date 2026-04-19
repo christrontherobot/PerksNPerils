@@ -1,5 +1,7 @@
 <?php
 // public/game_status.php
+<link rel="icon" type="image/png" href="/img/favicon.png">
+
 session_start();
 require_once('../src/db.php');
 

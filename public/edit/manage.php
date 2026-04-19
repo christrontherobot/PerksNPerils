@@ -1,5 +1,7 @@
 <?php
 require_once('../../src/db.php');
+<link rel="icon" type="image/png" href="/img/favicon.png">
+
 session_start();
 if (!isset($_SESSION['authenticated'])) { header("Location: index.php"); exit; }
 

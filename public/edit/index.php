@@ -1,4 +1,6 @@
 <?php
+<link rel="icon" type="image/png" href="/img/favicon.png">
+
 session_start();
 $admin_pass = getenv('ADMIN_PASSWORD'); // Set this in Render settings
 
