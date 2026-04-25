@@ -47,10 +47,11 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="icon" type="image/png" href="/img/favicon.png">
     <meta charset="UTF-8">
+    <base href="/projects/Perks-N-Perils/">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Perks n' Perils</title>
+    <link rel="icon" type="image/png" href="img/favicon.png">
     <link rel="stylesheet" href="css/style.css">
     <script>
         async function sync() {
@@ -63,13 +64,6 @@ if ($me && $me['draft_heroes'] && $me['draft_perks']) {
         setInterval(sync, 2000);
     </script>
 </head>
-<meta charset="UTF-8">
-    <base href="/projects/Perks-N-Perils/">
-    
-    <link rel="icon" type="image/png" href="img/favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Perks n' Perils</title>
-    <link rel="stylesheet" href="css/style.css">
 <body>
 
 <img src="img/blue_hand.png" class="chaos-cards p-blue-corner">
